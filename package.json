@@ -7,8 +7,9 @@
   "type": "module",
   "scripts": {
     "dev": "node scripts/build-zone-locale-map.mjs && node scripts/build-campaign-objectives.mjs && node scripts/dev.mjs",
-    "build": "tsc --noEmit && vite build && electron-builder --win",
-    "build:dir": "tsc --noEmit && vite build && electron-builder --win --dir",
+    "prepare:build": "node scripts/prepare-electron-build.mjs",
+    "build": "npm run prepare:build && tsc --noEmit && vite build && node scripts/run-electron-builder.mjs",
+    "build:dir": "npm run prepare:build && tsc --noEmit && vite build && node scripts/run-electron-builder.mjs --dir",
     "build:campaign": "node scripts/build-campaign-objectives.mjs",
     "build:campaign-pt": "node scripts/apply-campaign-pt-translations.mjs && node scripts/build-campaign-objectives-pt.mjs",
     "seed:data": "node scripts/build-zone-locale-map.mjs && node scripts/build-campaign-objectives.mjs && node scripts/build-campaign-objectives-pt.mjs && node scripts/run-seed.mjs",

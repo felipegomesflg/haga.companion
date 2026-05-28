@@ -8,6 +8,7 @@ dist-electron/
 
 # Electron / electron-builder (never commit installers or unpacked builds)
 release/
+.electron-builder-output.json
 *.blockmap
 
 # Generated at runtime or by seed scripts
