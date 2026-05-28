@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { ObjectiveCheckbox } from '../components/ObjectiveCheckbox'
 import { OverlayCloseButton } from '../components/OverlayCloseButton'
 import { useI18n } from '../hooks/useI18n'
 import type { CampaignArc, CampaignObjective, GameLocationState } from '../types/build'
@@ -89,8 +90,8 @@ export function CampaignPanelWindow() {
     await loadArc(arcId)
   }
 
-  const toggle = async (objective: CampaignObjective) => {
-    await window.haga.toggleObjective(objective.id, !objective.isCompleted)
+  const toggle = async (objective: CampaignObjective, completed: boolean) => {
+    await window.haga.toggleObjective(objective.id, completed)
     await loadArc(activeArcId)
   }
 
@@ -137,11 +138,10 @@ export function CampaignPanelWindow() {
         }`}
       >
         <div className="flex items-start gap-3">
-          <input
-            type="checkbox"
+          <ObjectiveCheckbox
             checked={obj.isCompleted}
-            onChange={() => toggle(obj)}
             className="mt-1 h-4 w-4 shrink-0 accent-amber-500"
+            onToggle={(completed) => void toggle(obj, completed)}
           />
           <div className="min-w-0 flex-1">
             <div className="flex flex-wrap items-center gap-2">

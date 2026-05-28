@@ -1,4 +1,6 @@
-import { queryPoeGameWindow, type PoeGameWindowState } from '../lib/poeGameWindow'
+import { focusPoeGameWindow, queryPoeGameWindow, type PoeGameWindowState } from '../lib/poeGameWindow'
+
+export { focusPoeGameWindow }
 
 export type GameWindowListener = (state: PoeGameWindowState) => void
 
@@ -16,6 +18,11 @@ export function getPoeGameWindowState(): PoeGameWindowState {
 /** True when the PoE2 client window exists (game is running). */
 export function isPoeGameRunning(): boolean {
   return stableBounds !== null
+}
+
+/** True when PoE2 is running and its window is the active foreground window. */
+export function isPoeGameForeground(): boolean {
+  return stableBounds !== null && lastEmitted.isForeground
 }
 
 export function startGameWindowTracker(listener: GameWindowListener, intervalMs = 750): void {
@@ -44,7 +51,8 @@ export function startGameWindowTracker(listener: GameWindowListener, intervalMs 
       stableState.bounds?.y !== lastEmitted.bounds?.y ||
       stableState.bounds?.width !== lastEmitted.bounds?.width ||
       stableState.bounds?.height !== lastEmitted.bounds?.height ||
-      Boolean(stableState.bounds) !== Boolean(lastEmitted.bounds)
+      Boolean(stableState.bounds) !== Boolean(lastEmitted.bounds) ||
+      stableState.isForeground !== lastEmitted.isForeground
 
     lastEmitted = stableState
     if (changed) listener(stableState)

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
+import { ObjectiveCheckbox } from '../components/ObjectiveCheckbox'
 import { OverlayCloseButton } from '../components/OverlayCloseButton'
 import { useI18n } from '../hooks/useI18n'
 import { zonesMatchExpected } from '../lib/zoneMatch'
@@ -197,14 +198,13 @@ export function HudWindow() {
         className={`overlay-panel hud-panel ${showBody ? 'hud-panel--expanded' : 'hud-panel--compact'}${isInExpectedZone ? ' hud-panel--zone-match' : ''}`}
       >
         <div className="hud-panel__header">
-          <input
-            type="checkbox"
+          <ObjectiveCheckbox
             checked={objective.isCompleted}
-            onChange={(e) => {
-              void window.haga.toggleObjective(objective.id, e.target.checked).then(refresh)
-            }}
             className="hud-panel__checkbox hud-panel__checkbox--lead"
             title={t.hud.markComplete}
+            onToggle={(completed) => {
+              void window.haga.toggleObjective(objective.id, completed).then(refresh)
+            }}
           />
           <div className="hud-panel__header-text">
             <div className="hud-panel__location">{locationLabel}</div>

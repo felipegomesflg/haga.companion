@@ -117,3 +117,77 @@ Write-Output "$($rect.Left),$($rect.Top),$width,$height,$isForeground"
     return { bounds: null, isForeground: false }
   }
 }
+
+/** Brings the PoE2 client window to the foreground (Windows only). */
+export async function focusPoeGameWindow(): Promise<boolean> {
+  if (process.platform !== 'win32') return false
+
+  const allowedNames = POE2_PROCESS_NAMES.map((n) => `'${n}'`).join(', ')
+
+  const script = `
+Add-Type @"
+using System;
+using System.Runtime.InteropServices;
+public static class HagaWin32 {
+  public const int SW_RESTORE = 9;
+  [DllImport("user32.dll")] public static extern IntPtr GetForegroundWindow();
+  [DllImport("user32.dll")] public static extern uint GetWindowThreadProcessId(IntPtr hWnd, IntPtr ProcessId);
+  [DllImport("user32.dll")] public static extern bool AttachThreadInput(uint idAttach, uint idAttachTo, bool fAttach);
+  [DllImport("user32.dll")] public static extern bool AllowSetForegroundWindow(int dwProcessId);
+  [DllImport("user32.dll")] public static extern bool ShowWindow(IntPtr hWnd, int nCmdShow);
+  [DllImport("user32.dll")] public static extern bool SetForegroundWindow(IntPtr hWnd);
+  [DllImport("user32.dll")] public static extern bool BringWindowToTop(IntPtr hWnd);
+}
+"@
+
+$allowed = @(${allowedNames})
+$installMarker = '${POE2_INSTALL_PATH_MARKER.replace(/\\/g, '\\\\')}'
+$titleMarker = '${POE2_WINDOW_TITLE_MARKER}'
+
+function Test-Poe2Process($proc) {
+  if (-not $proc -or $proc.MainWindowHandle -eq 0) { return $false }
+  if ($proc.ProcessName -notin $allowed) { return $false }
+  return $true
+}
+
+function Test-Poe2InstallPath($path) {
+  if (-not $path) { return $false }
+  return $path -like "*$installMarker*"
+}
+
+$candidates = Get-Process | Where-Object { Test-Poe2Process $_ }
+$proc = $candidates | Where-Object { Test-Poe2InstallPath $_.Path } | Select-Object -First 1
+if (-not $proc) {
+  $proc = $candidates | Where-Object { $_.MainWindowTitle -like "*$titleMarker*" } | Select-Object -First 1
+}
+if (-not $proc) { exit 1 }
+
+$hwnd = $proc.MainWindowHandle
+[void][HagaWin32]::AllowSetForegroundWindow($proc.Id)
+[void][HagaWin32]::ShowWindow($hwnd, [HagaWin32]::SW_RESTORE)
+
+$fg = [HagaWin32]::GetForegroundWindow()
+$fgThread = [HagaWin32]::GetWindowThreadProcessId($fg, [IntPtr]::Zero)
+$gameThread = [HagaWin32]::GetWindowThreadProcessId($hwnd, [IntPtr]::Zero)
+if ($fgThread -ne 0 -and $gameThread -ne 0) {
+  [void][HagaWin32]::AttachThreadInput($fgThread, $gameThread, $true)
+}
+[void][HagaWin32]::SetForegroundWindow($hwnd)
+[void][HagaWin32]::BringWindowToTop($hwnd)
+if ($fgThread -ne 0 -and $gameThread -ne 0) {
+  [void][HagaWin32]::AttachThreadInput($fgThread, $gameThread, $false)
+}
+exit 0
+`.trim()
+
+  try {
+    await execFileAsync(
+      'powershell.exe',
+      ['-NoProfile', '-ExecutionPolicy', 'Bypass', '-Command', script],
+      { timeout: 3000, windowsHide: true },
+    )
+    return true
+  } catch {
+    return false
+  }
+}

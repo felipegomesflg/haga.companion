@@ -3,7 +3,7 @@ import path from 'node:path'
 import { loadAppIcon } from '../lib/publicAssets'
 import type { GameWindowBounds } from '../lib/poeGameWindow'
 import type { GemUnlockAlert } from '../../src/types/build'
-import { getPoeGameWindowState, isPoeGameRunning } from '../services/gameWindowService'
+import { getPoeGameWindowState, isPoeGameForeground, isPoeGameRunning } from '../services/gameWindowService'
 import { getSetting, getUserDb, setSetting } from '../db/userDb'
 
 const DESKTOP_WINDOW_KINDS = new Set<OverlayWindowKind>(['settings', 'about'])
@@ -87,7 +87,7 @@ async function drainGemUnlockQueue(): Promise<void> {
 }
 
 export function showGemUnlockToast(alert: GemUnlockAlert, options: { force?: boolean } = {}): void {
-  if (!options.force && !isPoeGameRunning()) return
+  if (!options.force && !isPoeGameForeground()) return
 
   if (options.force) gemUnlockForceNext = true
   gemUnlockQueue.push(alert)
@@ -381,30 +381,31 @@ export function repositionOverlayWindow(kind: OverlayWindowKind, game: GameWindo
   win.setBounds(positionForKind(kind, game))
 }
 
-/** Follow PoE2 window position/size only — never auto hide on Alt+Tab. */
+/** Follow PoE2 window; hide when another app has focus (not PoE2 and not a HAGA game overlay). */
 export function syncOverlaysToGameWindow(state: {
   bounds: GameWindowBounds | null
   isForeground: boolean
 }): void {
-  if (!state.bounds) {
+  if (!isGameOverlayContextActive(state)) {
     for (const kind of GAME_OVERLAY_KINDS) {
       getOverlayWindow(kind)?.hide()
     }
     return
   }
 
+  const game = state.bounds!
   for (const kind of GAME_OVERLAY_KINDS) {
     if (DEV_OVERLAY_KINDS.has(kind) && !isDevRuntime()) continue
     if (!userWantsVisible.get(kind)) continue
 
     const win = getOverlayWindow(kind) ?? createOverlayWindow(kind)
-    repositionOverlayWindow(kind, state.bounds)
+    repositionOverlayWindow(kind, game)
     if (!win.isVisible()) win.show()
   }
 }
 
 export function toggleBuildPanelMaximized(): void {
-  if (!isPoeGameRunning() || buildPanelCollapsed) return
+  if (!isGameOverlayContextActive() || buildPanelCollapsed) return
 
   buildPanelMaximized = !buildPanelMaximized
   applyBuildPanelBounds()
@@ -414,7 +415,7 @@ export function toggleBuildPanelMaximized(): void {
 }
 
 export function toggleBuildPanelDockSide(): void {
-  if (!isPoeGameRunning()) return
+  if (!isGameOverlayContextActive()) return
 
   buildPanelDockSide = buildPanelDockSide === 'right' ? 'left' : 'right'
   setSetting(getUserDb(), 'buildPanelDockSide', buildPanelDockSide)
@@ -425,7 +426,7 @@ export function toggleBuildPanelDockSide(): void {
 }
 
 export function collapseBuildPanel(): void {
-  if (!isPoeGameRunning()) return
+  if (!isGameOverlayContextActive()) return
 
   userWantsVisible.set('build-panel', true)
   buildPanelCollapsed = true
@@ -436,7 +437,7 @@ export function collapseBuildPanel(): void {
 }
 
 export function expandBuildPanel(): void {
-  if (!isPoeGameRunning()) return
+  if (!isGameOverlayContextActive()) return
 
   userWantsVisible.set('build-panel', true)
   buildPanelCollapsed = false
@@ -611,6 +612,13 @@ export function createOverlayWindow(kind: OverlayWindowKind): BrowserWindow {
   }
 
   win.on('closed', () => windows.delete(kind))
+
+  if (GAME_OVERLAY_KINDS.has(kind)) {
+    win.on('focus', () => {
+      syncOverlaysToGameWindow(getPoeGameWindowState())
+    })
+  }
+
   win.once('ready-to-show', () => {
     if (DESKTOP_WINDOW_KINDS.has(kind)) {
       win.show()
@@ -620,7 +628,7 @@ export function createOverlayWindow(kind: OverlayWindowKind): BrowserWindow {
     if (!userWantsVisible.get(kind)) return
 
     const { bounds } = getPoeGameWindowState()
-    if (bounds) {
+    if (bounds && isGameOverlayContextActive()) {
       repositionOverlayWindow(kind, bounds)
       if (kind === 'build-panel') {
         notifyBuildPanelCollapsed(win)
@@ -643,6 +651,24 @@ export function getOverlayWindow(kind: OverlayWindowKind): BrowserWindow | undef
   return undefined
 }
 
+/** PoE2 is running and either the game or a HAGA game overlay has focus (clicks on companion must not hide UI). */
+function isGameOverlayContextActive(
+  state: { bounds: GameWindowBounds | null; isForeground: boolean } = getPoeGameWindowState(),
+): boolean {
+  if (!state.bounds) return false
+  if (state.isForeground) return true
+
+  const focused = BrowserWindow.getFocusedWindow()
+  if (!focused) return false
+
+  for (const kind of GAME_OVERLAY_KINDS) {
+    const win = getOverlayWindow(kind)
+    if (win && !win.isDestroyed() && focused.id === win.id) return true
+  }
+
+  return false
+}
+
 export function toggleOverlayWindow(kind: OverlayWindowKind): void {
   if (kind === 'build-panel') {
     toggleBuildPanel()
@@ -663,7 +689,7 @@ export function showOverlayWindow(kind: OverlayWindowKind): void {
   }
 
   if (GAME_OVERLAY_KINDS.has(kind)) {
-    if (!isPoeGameRunning()) return
+    if (!isGameOverlayContextActive()) return
     userWantsVisible.set(kind, true)
     const { bounds } = getPoeGameWindowState()
     const win = getOverlayWindow(kind) ?? createOverlayWindow(kind)
@@ -703,6 +729,17 @@ export function initDevTools(): void {
   if (!isDevRuntime()) return
   userWantsVisible.set('dev-tools-rail', true)
   createOverlayWindow('dev-tools-rail')
+}
+
+/** Release focus from companion overlays so PoE2 can receive keyboard input again. */
+export function blurGameOverlayWindows(sender?: BrowserWindow): void {
+  if (sender && !sender.isDestroyed()) {
+    sender.blur()
+  }
+  for (const kind of GAME_OVERLAY_KINDS) {
+    const win = getOverlayWindow(kind)
+    if (win && !win.isDestroyed()) win.blur()
+  }
 }
 
 export function broadcastToWindows(channel: string, payload?: unknown): void {

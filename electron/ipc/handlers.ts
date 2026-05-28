@@ -3,6 +3,7 @@ import { getSetting, setSetting, getUserDb } from '../db/userDb'
 import * as objectiveService from '../services/objectiveService'
 import { getZonesForArc } from '../lib/zoneArcMap'
 import { getGameLocationState, refreshClientLogTracker, reloadCharacterLevelFromBuild, resetCharacterLevelFromLog } from '../services/clientLogService'
+import { focusPoeGameWindow } from '../services/gameWindowService'
 import { setGameCharacterName } from '../services/characterLevelService'
 import { debugTriggerLevelUp } from '../services/gemUnlockService'
 import * as buildService from '../services/buildService'
@@ -14,6 +15,7 @@ import type { AppSettings } from '../../src/types/build'
 import { DEFAULT_LOCALE, normalizeLocale } from '../../src/types/locale'
 import type { SaveBuildItemInput, SaveGemGroupInput, SaveTreeSlotInput, UploadPassiveTreeImageInput } from '../../src/types/ipc'
 import {
+  blurGameOverlayWindows,
   hideOverlayWindow,
   collapseBuildPanel,
   expandBuildPanel,
@@ -63,9 +65,12 @@ function loadSettings(): AppSettings {
 export function registerIpcHandlers(): void {
   ipcMain.handle('haga:getHudState', () => objectiveService.getHudState())
 
-  ipcMain.handle('haga:toggleObjective', (_e, objectiveId: string, completed: boolean) => {
+  ipcMain.handle('haga:toggleObjective', async (event, objectiveId: string, completed: boolean) => {
     const state = objectiveService.toggleObjective(objectiveId, completed)
     windowRefs.broadcastHudUpdate?.()
+    const sender = BrowserWindow.fromWebContents(event.sender)
+    blurGameOverlayWindows(sender ?? undefined)
+    await focusPoeGameWindow()
     return state
   })
 
