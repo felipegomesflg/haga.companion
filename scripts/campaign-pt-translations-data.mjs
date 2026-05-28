@@ -1,0 +1,125 @@
+/**
+ * PT-BR translations for campaign arcs and objectives.
+ * Descriptions are applied to scripts/campaign-pt-i18n.json via npm run build:campaign-pt
+ */
+export const ARC_TRANSLATIONS = {
+  act1: {
+    name: 'Ato 1 — Ogham',
+    tabLabel: 'Ato 1',
+    description:
+      'Complete a história de Ogham enquanto obtém buffs permanentes: +4 pontos passivos, +10% de resistência ao frio, +30 de espírito, +20 de vida máxima e a Bancada de Reciclagem.',
+  },
+  act2: {
+    name: 'Ato 2 — Vastiri',
+    tabLabel: 'Ato 2',
+    description:
+      'Atravesse o deserto, reúna o Chifre de Vastiri e assalte o Dreadnought. Recompensas permanentes: +4 pontos passivos, +10% de resistência à lightning e um bônus de charm/flask intercambiável.',
+  },
+  act3: {
+    name: 'Ato 3 — Utzaal / Vaal',
+    tabLabel: 'Ato 3',
+    description:
+      'Explore as ruínas Vaal, drene as vias d\'água e enfrente Doryani. Recompensas permanentes: +4 pontos passivos, +30 de espírito, +10% de resistência ao fogo, uma escolha utilitária irreversível e a Bancada de Reforja.',
+  },
+  act4: {
+    name: 'Ato 4 — Kingsmarch e as Ilhas',
+    tabLabel: 'Ato 4',
+    description:
+      'Navegue pelo arquipélago, complete os julgamentos ancestrais e termine A Busca. Acumule pontos passivos, tatuagens, bônus de flask, moeda e joias de leveling top tier.',
+  },
+  'act5-2': {
+    name: 'Interlúdio — A Barya Roubada (Khari)',
+    tabLabel: 'Int. Khari',
+    description:
+      'Recrute os Maraketh ajudando Sekhema Asala. Recomendado PRIMEIRO entre os interlúdios (escala mais difícil). Recompensas: +2 pontos passivos, +5% de vida máx., bênçãos Qimah intercambiáveis, joias raras e moeda dos poços.',
+  },
+  'act5-3': {
+    name: 'Interlúdio — Contingência de Doryani (Kriar)',
+    tabLabel: 'Int. Kriar',
+    description:
+      'Suba o Monte Kriar pela contingência Vaal. Recomendado SEGUNDO (early +40 espírito). Recompensas: +40 espírito, +4 pontos passivos, gema de skill nível 14 e um item único grátis.',
+  },
+  'act5-1': {
+    name: 'Interlúdio — A Maldição de Holten (Ogham)',
+    tabLabel: 'Int. Ogham',
+    description:
+      'Recrute os Ezomytes em Ogham congelado. Recomendado POR ÚLTIMO (mais fácil). Recompensas: +2 pontos passivos e Runas Maiores com desconto do Barqueiro.',
+  },
+  act6: {
+    name: 'Ato 6 — Em breve',
+    tabLabel: 'Ato 6',
+    description: 'Em breve',
+  },
+}
+
+export const TITLE_TRANSLATIONS = {
+  'act1-010': 'The Riverbank — Derrote The Bloated Miller',
+  'act1-020': 'Clearfell — Resistência ao Frio (Beira) + Loot Inicial',
+  'act1-030': 'The Grelwood — Segredos nas Trevas',
+  'act1-035': 'The Red Vale — Runas de Poder',
+  'act1-040': 'Grim Tangle → Cemetery — A Sombra Misteriosa',
+  'act1-050': 'Sorrow Among Stones — Chave Memorial e Lachlann',
+  'act1-060': 'Hunting Grounds — Crowbell (+2 Pontos Passivos)',
+  'act1-070': 'Freythorn — King In The Mist (+30 Espírito)',
+  'act1-080': 'Ogham Farmlands — Alaúde de Una (+2 Pontos Passivos)',
+  'act1-090': 'Ogham Village — Carrasco e Ferramentas de Forja',
+  'act1-100': 'The Manor Ramparts — Passagem para o Manor',
+  'act1-105': 'The Gallows — Gema de Suporte',
+  'act1-110': 'Ogham Manor — Candlemass (+20 Vida) e Count Geonor',
+  'act2-010': 'Vastiri Outskirts — Ganhando Passagem',
+  'act2-020': 'Mawdun Quarry & Mine — Rudja, Dread Engineer',
+  'act2-030': 'Traitor\'s Passage — Balbala e Chave do Trial',
+  'act2-040': 'Keth — Kabala (+2 Pontos) e Relíquia do Clã Kabala',
+  'act2-050': 'Buried Shrines — Azarian e Oferta Elemental',
+  'act2-060': 'Bone Pits — Relíquia do Clã do Sol e Presas de Mastodonte',
+  'act2-070': 'Valley of the Titans — Altar de Relíquias (Bônus Intercambiável)',
+  'act2-080': 'Deshar — Carta Final (+2 Pontos) e Gêmeos Vigilantes',
+  'act2-090': 'Spires of Deshar — Santuário de Garukhan (+10% Res. Lightning)',
+  'act2-100': 'Dreadnought — Jamanra, The Abomination (Chefe do Ato)',
+  'act3-010': 'Sandswept Marsh — Fogueira Orok e Rootridge',
+  'act3-020': 'Ziggurat Encampment — Encontre Alva, Oswald e Servi',
+  'act3-030': 'Jungle Ruins — Mighty Silverfist (+2 Pontos Passivos)',
+  'act3-040': 'Infested Barrens — Mecanismo do Canal',
+  'act3-050': 'Azak Bog — Ignagduk (+30 Espírito)',
+  'act3-060': 'Venom Crypts — Frasco de Veneno (Escolha Permanente)',
+  'act3-070': 'Chimeral Wetlands — Xyclucian e Trial of Chaos',
+  'act3-080': 'Jiquani\'s Machinarium — Blackjaw (+10% Res. Fogo)',
+  'act3-090': 'Jiquani\'s Sanctum — Zicoatl e Large Soul Core',
+  'act3-100': 'Matlan Waterways — Drene o Dilúvio',
+  'act3-110': 'Drowned City — Ídolo da Porta do Templo',
+  'act3-115': 'Apex of Filth — Queen of Filth',
+  'act3-120': 'Molten Vault — Mektul e Bancada de Reforja',
+  'act3-130': 'Temple of Kopec — Ketzuli, High Priest',
+  'act3-140': 'Utzaal — Viper Napuatzi e Sacrificial Heart',
+  'act3-145': 'Aggorat — Aproximação das Câmaras Negras',
+  'act3-150': 'Black Chambers — Doryani (Chefe do Ato)',
+  'act4-010': 'Kingsmarch — Zarpar (A Busca Começa)',
+  'act4-020': 'Kedge Bay — Névoas Sombrias e Omniphobia (+2 Pontos)',
+  'act4-030': 'Shrike Island → Eye of Hinekora (+5% Mana Máx.)',
+  'act4-040': 'Isle of Kin — Blind Beast (+2 Pontos) e Cercado da Besta',
+  'act4-050': 'Volcanic Warrens — Golems de Fogo e Lightning (Anéis Raros)',
+  'act4-060': 'Halls of the Dead — Trial of Ngkanu (Tatuagens)',
+  'act4-070': 'Trail of the Ancestors — Yama the White (+2 Pontos)',
+  'act4-080': 'Abandoned Prison — Goddess of Justice (Recuperação de Flask)',
+  'act4-090': 'Whakapanu — Suporte da Caverna do Caranguejo e Mercado',
+  'act4-100': 'Singing Caverns — Amuleto Perolado (Todas as Res.)',
+  'act4-110': 'Arastas — Sinos da Manhã e da Tarde (Moeda)',
+  'act4-120': 'Fragmentos de Mapa — Desbloqueio de Logbook',
+  'act4-130': 'Ngakanu — Tavakai (Final do Ato 4)',
+  'act5-2-010': 'Khari Crossing — Akthi e Anundr (+2 Pontos Passivos)',
+  'act5-2-020': 'Skullmaw Stairway — Presente do Molten One (+5% Vida Máx.)',
+  'act5-2-030': 'Khari Crossing — Vendedor com Desconto Torbek',
+  'act5-2-040': 'Qimah — Sete Pilares (Bênçãos Intercambiáveis)',
+  'act5-2-050': 'Sel Khari Sanctuary — Baryas e Joias Raras',
+  'act5-2-060': 'Qimah Reservoir — Restaure os Poços (Moeda)',
+  'act5-2-070': 'Galai Gates — Vornas, the Fell Flame',
+  'act5-3-010': 'Ashen Forest — Monumento Antigo (Gema de Skill L14)',
+  'act5-3-020': 'Kriar Village — Lythara (+40 Espírito)',
+  'act5-3-030': 'Howling Caves — Abominable Yeti (+2 Pontos Passivos)',
+  'act5-3-040': 'Kriar Peaks — Elder Madox (Único Grátis)',
+  'act5-3-050': 'Cuachic Vault — Stormgore e Sacerdotes (Final)',
+  'act5-3-060': 'Cuachic Vault — Complete a Contingência de Doryani',
+  'act5-1-010': 'Holten — Alma do Barqueiro (Runas Maiores Baratas)',
+  'act5-1-020': 'Wolvenhold — Oswin, the Dread Warden (+2 Pontos)',
+  'act5-1-030': 'Todos os Interlúdios Concluídos — Check-in Final com o Encapuzado',
+}

@@ -1,0 +1,702 @@
+/** @typedef {'campaign' | 'reward' | 'bench' | 'gear' | 'trial' | 'currency'} ObjectiveType */
+
+/**
+ * @typedef {Object} CampaignObjectiveDef
+ * @property {string} id
+ * @property {string} title
+ * @property {string} description
+ * @property {boolean} [isOptional]
+ * @property {ObjectiveType} [objectiveType]
+ * @property {string[]} [rewardTags]
+ */
+
+/**
+ * @typedef {Object} CampaignArcDef
+ * @property {string} id
+ * @property {number} actNumber
+ * @property {string} name
+ * @property {string} tabLabel
+ * @property {string} description
+ * @property {number} sortOrder
+ * @property {boolean} [isAvailable]
+ * @property {CampaignObjectiveDef[]} objectives
+ */
+
+/** @type {CampaignArcDef[]} */
+export const CAMPAIGN_ARCS = [
+  {
+    id: 'act1',
+    actNumber: 1,
+    name: 'Act 1 — Ogham',
+    tabLabel: 'Act 1',
+    sortOrder: 10,
+    description:
+      'Complete the Ogham storyline while picking up permanent buffs: +4 passive points, +10% cold resistance, +30 spirit, +20 maximum life, and the Salvaging Bench.',
+    objectives: [
+      {
+        id: 'act1-010',
+        title: 'The Riverbank — Defeat The Bloated Miller',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Start the campaign in The Riverbank. Clear the area and defeat The Bloated Miller at the Besieged Encampment landmark to unlock the path toward Clearfell.\n\nAfter the fight, follow the trail to the Clearfell Encampment and speak with Renly to complete the quest Reaching Clearfell. This establishes your first hub — use it to vendor junk, manage flasks, and prepare before entering the wilderness.',
+      },
+      {
+        id: 'act1-020',
+        title: 'Clearfell — Cold Resistance (Beira) + Early Loot',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['resistance_cold', 'gear'],
+        description:
+          'Enter Clearfell from the encampment. This zone is your first real farming area — pick up any weapon upgrades and flask improvements you find.\n\nOptional power spike: hunt down Beira Of The Rotten Pack for a permanent +10% cold resistance. Act 3 and later zones apply heavy cold damage, so this buff is worth the detour even on speed runs.\n\nOptional loot: search for the Mysterious Campsite interactable for a guaranteed Uncut Skill Gem (Level 1). If you have time, the Mud Burrow side area contains The Devourer — killing him and reporting back grants an Uncut Skill Gem (L2), Uncut Support Gem (L1), and gold.',
+      },
+      {
+        id: 'act1-030',
+        title: 'The Grelwood — Secrets in the Dark',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Progress Secrets in the Dark by entering The Grelwood. Una appears here — talk to her to advance the story.\n\nOptional detours in Grelwood:\n• Areagne\'s Hut — defeat Areagne, Forgotten Witch for an Uncut Skill Gem; interact with the cauldron for two Medium Life/Mana flasks.\n• The Brambleghast — drops skill and support gems.\n• Speak to Delwyn to unlock The Hunt Begins (Ritual league mechanic tutorial).\n\nAfter collecting the Runes of Power from The Red Vale, bring them to Renly in Clearfell Encampment. He forges Rune Spikes that you use on the Tree of Souls here.',
+      },
+      {
+        id: 'act1-035',
+        title: 'The Red Vale — Runes of Power',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'From The Grelwood, continue to The Red Vale and investigate the three Obelisks of Rust. Defeat enemies and The Rust King at each obelisk to collect all three Runes of Power.\n\nReturn to Renly in Clearfell Encampment so he can forge Rune Spikes for the Tree of Souls back in Grelwood.\n\nOptional: loot refined weapon racks in Red Vale for Tier 2 martial weapons.',
+      },
+      {
+        id: 'act1-040',
+        title: 'Grim Tangle → Cemetery — The Mysterious Shade',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'After activating the Tree of Souls in Grelwood, enter the Grim Tangle and summon Una to continue The Mysterious Shade quest line.\n\nOptional: defeat The Rotten Druid in Grim Tangle for an Uncut Support Gem.\n\nPush through until you find the entrance to the Cemetery of the Eternals. You will return here for the next major quest chain.',
+      },
+      {
+        id: 'act1-050',
+        title: 'Sorrow Among Stones — Memorial Key & Lachlann',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'gear'],
+        description:
+          'In the Cemetery of the Eternals, speak with Lachlann the Lost near the Graveyard waypoint to start Sorrow Among Stones.\n\nStep-by-step:\n1. Enter the Mausoleum of the Praetor and defeat Draven, Eternal Praetor for the first Memorial Key Piece.\n2. Optional: find the hidden switch in the Mausoleum for a Forgotten Riches room full of gold.\n3. Exit to the Graveyard and enter the Tomb of the Consort.\n4. Optional: defeat the guardian of the Embattled Trove for extra loot and an Uncut Support Gem.\n5. Defeat Asinia, Praetor Consort for the second Memorial Key Piece.\n6. Return to Lachlann, open the Memorial Gate, and defeat Lachlann of Endless Lament to obtain Count Lachlann\'s Ring.\n\nOptional Cemetery loot: search Ancient Ruins or Sarcophagi for rings (50/50 Iron Ring vs Lazuli Ring).',
+      },
+      {
+        id: 'act1-060',
+        title: 'Hunting Grounds — Crowbell (+2 Passive Points)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['passive_points'],
+        description:
+          'Travel to the Hunting Grounds as part of The Trail of Corruption. Before pushing toward the farmlands, defeat Crowbell for +2 weapon-set passive skill points (Book of Specialisation).\n\nOptional: disrupt the Dryadic Ritual in this region for an Uncut Support Gem.\n\nRoute tip: Crowbell is a quick boss — always worth killing on league start.',
+      },
+      {
+        id: 'act1-070',
+        title: 'Freythorn — King In The Mist (+30 Spirit)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['spirit', 'gear'],
+        description:
+          'Detour into Freythorn (accessible from Hunting Grounds area) to complete Ominous Altars / Ritual encounters until you summon The King In The Mist.\n\nDefeating him grants:\n• +30 maximum Spirit (permanent)\n• Guaranteed Uncut Spirit Gem on first kill\n\nSpirit is required for companion and aura skills — this is one of the highest-impact optional objectives in the entire campaign. Strongly recommended for every build using spirit skills.',
+      },
+      {
+        id: 'act1-080',
+        title: 'Ogham Farmlands — Una\'s Lute (+2 Passive Points)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['passive_points'],
+        description:
+          'In Ogham Farmlands, find Una\'s Lute and deliver it to Una in Clearfell Encampment for +2 passive skill points (The Lost Lute quest).\n\nOptional: defeat Vargir the Feral Mutt in the crop circle for an Uncut Skill Gem (L4).\n\nOptional: kill the ambush monster on the farmlands for another skill gem drop.',
+      },
+      {
+        id: 'act1-090',
+        title: 'Ogham Village — Executioner & Smithing Tools',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'bench'],
+        description:
+          'Enter Ogham Village and defeat The Executioner — this is a mandatory campaign boss for The Trail of Corruption.\n\nAfter the fight, free Leitis from the execution platform and speak with her.\n\nOptional but highly recommended: locate the Smithing Tools in the village and deliver them to Renly to unlock the Salvaging Bench (Finding the Forge). Also loot the Blacksmith\'s chest next to the tools for an Artificer\'s Orb and Blank Lesser Rune — Renly can exchange the blank rune for a rune of your choice.\n\nReturn to Clearfell Encampment and talk to Leitis to advance the story.',
+      },
+      {
+        id: 'act1-100',
+        title: 'The Manor Ramparts — Passage to the Manor',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear'],
+        description:
+          'On the way to Ogham Manor, pass through The Manor Ramparts toward the inner courtyard.',
+      },
+      {
+        id: 'act1-105',
+        title: 'The Gallows — Support Gem',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear'],
+        description:
+          'Optional: in The Gallows area, cut the hanging rope to obtain an Uncut Support Gem. This is a small detour for gem progression before the act boss.',
+      },
+      {
+        id: 'act1-110',
+        title: 'Ogham Manor — Candlemass (+20 Life) & Count Geonor',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'life'],
+        description:
+          'Enter The Ogham Manor for the act finale, The Mad Wolf of Ogham.\n\nOptional permanent buff: click the Psalm Of Madness to wake Candlemass, The Living Rite, then defeat him for +20 maximum life.\n\nProceed to the arena and defeat Count Geonor to complete Act 1. Return to Clearfell Encampment and speak with The Hooded One to travel to Act 2.',
+      },
+    ],
+  },
+  {
+    id: 'act2',
+    actNumber: 2,
+    name: 'Act 2 — Vastiri',
+    tabLabel: 'Act 2',
+    sortOrder: 20,
+    description:
+      'Cross the desert, gather the Horn of Vastiri, and assault the Dreadnought. Permanent rewards: +4 passive points, +10% lightning resistance, and a swappable charm/flask bonus.',
+    objectives: [
+      {
+        id: 'act2-010',
+        title: 'Vastiri Outskirts — Earning Passage',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Speak with The Hooded One in Clearfell Encampment, then travel to Vastiri Outskirts and meet Zarka at the Ardura Caravan.\n\nOptional: loot the Devastated Camp for an Uncut Support Gem (L2).\n\nContinue to Sun Clan Cliff and defeat the Rathbreaker to complete Earning Passage. Return to Zarka at the caravan.',
+      },
+      {
+        id: 'act2-020',
+        title: 'Mawdun Quarry & Mine — Rudja, Dread Engineer',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'gear'],
+        description:
+          'Use the Desert Map from the caravan to reach Mawdun Quarry. Follow the outer wall to find a hidden camp with an Artificer\'s Orb — easy to miss, so hug the walls while exploring.\n\nEnter Mawdun Mine and defeat Rudja, Dread Engineer. Release Risu, Faridun Defector from her cage afterward and speak with her back at the Ardura Caravan.\n\nTravel to The Halani Gates. Optional: defeat L\'im the Impaler before moving on.',
+      },
+      {
+        id: 'act2-030',
+        title: 'Traitor\'s Passage — Balbala & Trial Key',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'gear'],
+        description:
+          'From the caravan, enter Traitor\'s Passage.\n\nOptional: loot the Bellchest for an Uncut Skill Gem (L6).\n\nOptional: defeat Balbala, the Traitor — she drops a key to the Trial of Sekhemas (Ascendancy trial, ~level 22). This is separate from the permanent buff checklist but critical for ascendancy power.\n\nAscend the passage to reach the top of the Halani Gates and fight Jamanra, the Risen King until he flees at ~30% HP toward the sandstorm. You need the Horn of Vastiri before you can pursue him.',
+      },
+      {
+        id: 'act2-040',
+        title: 'Keth — Kabala (+2 Points) & Kabala Clan Relic',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['passive_points', 'progress'],
+        description:
+          'Travel to Keth for The City of Seven Waters quest chain.\n\nDefeat Kabala, Constrictor Queen for +2 passive skill points.\n\nWhile clearing Keth, kill hyena enemies until the Kabala Clan Relic drops — you need this for the Valley of the Titans altar later (Ancient Vows side quest).\n\nOptional: find the Treasure Room for a white base amulet.\n\nOptional: defeat The Ninth Treasure of Keth in The Lost City for a random jewel, and search the Golden Tomb for an Uncut Spirit Gem.',
+      },
+      {
+        id: 'act2-050',
+        title: 'Buried Shrines — Azarian & Elemental Offering',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'resistance'],
+        description:
+          'Find the entrance to the Buried Shrines and defeat Azarian, The Forsaken Son.\n\nOptional: locate the Elemental Offering shrine and loot one of three chests for an elemental ring plus matching rune:\n• Ruby Ring + Desert Rune (fire)\n• Topaz Ring + Storm Rune (lightning)\n• Sapphire Ring + Glacial Rune (cold)\n\nEnter the Shrine of the Water Goddess, speak with Halani, and use the Everburning Cinders to ignite her and collect the Essence of Water. Return to Zarka at the caravan.',
+      },
+      {
+        id: 'act2-060',
+        title: 'Bone Pits — Sun Clan Relic & Mastodon Tusks',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'For A Theft of Ivory, travel to Mastodon Badlands and enter The Bone Pits.\n\nOptional: kill snake enemies until the Sun Clan Relic drops (needed for Valley of the Titans altar).\n\nContinue to Blackrib Pit and defeat both Iktab, the Deathlord and Ekbab, Ancient Steed. Collect the Mastodon Tusks and return them to Zarka at the caravan.',
+      },
+      {
+        id: 'act2-070',
+        title: 'Valley of the Titans — Relics Altar (Swappable Bonus)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['charm', 'flask'],
+        description:
+          'In Valley of the Titans, activate the three Ancient Seals, then deliver the Kabala and Sun Clan Relics to the central altar.\n\nChoose one permanent bonus (swappable anytime by returning to the altar):\n• 30% increased Charm Charges gained\n• 15% increased Life Recovery from Flasks\n\nThis zone also has a guaranteed Abyss spawn — excellent for experience and rare loot while clearing.\n\nEnter The Titan Grotto, reach the Dais of Reckoning, and defeat Zalmarath, the Colossus for the Flame Ruby. Give the ruby to Zarka.',
+      },
+      {
+        id: 'act2-080',
+        title: 'Deshar — Final Letter (+2 Points) & Watchful Twins',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['passive_points', 'gear'],
+        description:
+          'After assembling the Horn of Vastiri, use it at the sandstorm to reach Deshar.\n\nOptional: complete Tradition\'s Toll — find the Final Letter on a corpse and deliver it to Shambrin in the caravan for +2 passive skill points.\n\nOptional: loot containers along the left or right wall for an Artificer\'s Orb.\n\nOptional: defeat the Watchful Twins for a Level 28 Barya and rare loot.',
+      },
+      {
+        id: 'act2-090',
+        title: 'Spires of Deshar — Garukhan Shrine (+10% Lightning Res)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['resistance_lightning'],
+        description:
+          'Climb to The Spires of Deshar and interact with the Sisters of Garukhan Shrine — no boss fight required, just click the shrine for permanent +10% lightning resistance.\n\nThen defeat Tor Gul, The Defiler to continue the main quest.',
+      },
+      {
+        id: 'act2-100',
+        title: 'Dreadnought — Jamanra, The Abomination (Act Boss)',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Travel to the Dreadnought, enter the Dreadnought Vanguard, and defeat Jamanra, The Abomination to complete Act 2.\n\nReturn to the Ardura Caravan and speak with The Hooded One and Sekhema Asala to begin Act 3.',
+      },
+    ],
+  },
+  {
+    id: 'act3',
+    actNumber: 3,
+    name: 'Act 3 — Utzaal / Vaal',
+    tabLabel: 'Act 3',
+    sortOrder: 30,
+    description:
+      'Explore the Vaal ruins, drain the waterways, and confront Doryani. Permanent rewards: +4 passive points, +30 spirit, +10% fire resistance, one irreversible utility choice, and the Reforging Bench.',
+    objectives: [
+      {
+        id: 'act3-010',
+        title: 'Sandswept Marsh — Orok Campfire & Rootridge',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['currency', 'gear'],
+        description:
+          'Speak with The Hooded One and explore Sandswept Marsh toward the Ziggurat Encampment.\n\nOptional: find Orok Campfire and click the Basket for a guaranteed Lesser Jeweller\'s Orb.\n\nOptional: defeat Rootridge for an Uncut Skill Gem (L9).\n\nOptional: search the Hanging Tree for extra loot.',
+      },
+      {
+        id: 'act3-020',
+        title: 'Ziggurat Encampment — Meet Alva, Oswald & Servi',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Reach the Ziggurat Encampment hub. Talk to Alva, Oswald, and The Hooded One to establish your Act 3 base.\n\nThis camp is your pivot point for multiple back-and-forth quest steps — set a waypoint habit here.',
+      },
+      {
+        id: 'act3-030',
+        title: 'Jungle Ruins — Mighty Silverfist (+2 Passive Points)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['passive_points', 'gear'],
+        description:
+          'Clear Jungle Ruins as part of the Legacy of the Vaal quest line.\n\nDefeat Mighty Silverfist for +2 passive skill points.\n\nOptional: find the trader camp with chests — vendor sells high-quality gear and chests contain rare gloves; beast encounters here drop Tame Beast gems.\n\nOptional: find the Jungle Grave and speak with Servi afterward to choose a rare belt.',
+      },
+      {
+        id: 'act3-040',
+        title: 'Infested Barrens — Canal Mechanism',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'gear'],
+        description:
+          'Enter Infested Barrens and locate the Canal Mechanism to progress the main story.\n\nOptional: find the second trader camp (rare boots + beast spawns).\n\nOptional: search Troubled Camps for additional loot.',
+      },
+      {
+        id: 'act3-050',
+        title: 'Azak Bog — Ignagduk (+30 Spirit)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['spirit', 'gear'],
+        description:
+          'Detour to The Azak Bog and defeat Ignagduk, The Bog Witch (Tribal Vengeance quest).\n\nRewards:\n• +30 maximum Spirit (permanent)\n• Guaranteed Uncut Spirit Gem on first kill\n\nOptional EXP farm: start the Flame Ritual in Azak Bog — kill rare/magic waves, respawn at checkpoint, repeat. Excellent leveling spot until ~level 34.',
+      },
+      {
+        id: 'act3-060',
+        title: 'Venom Crypts — Venom Vial (Permanent Choice)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['utility'],
+        description:
+          'Enter The Venom Crypts, find the Venom Vial on a corpse, and deliver it to Servi in camp (The Slithering Dead).\n\nChoose ONE permanent bonus — you cannot change this later:\n• 25% increased Stun Threshold\n• 30% increased Elemental Ailment Threshold\n• 25% increased Mana Regeneration Rate\n\nRecommendation: mana regen for caster builds; stun or ailment threshold for melee/tanky setups.',
+      },
+      {
+        id: 'act3-070',
+        title: 'Chimeral Wetlands — Xyclucian & Trial of Chaos',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'trial'],
+        description:
+          'Travel to Chimeral Wetlands and defeat Xyclucian, the Chimera.\n\nAfter this boss, the Trial of Chaos unlocks (~level 38) — complete it for 2 ascendancy passive points (separate from this checklist but plan for it).\n\nOptional: Ravaged Camp gold chest; Toxic Bloom and The Noxious Behemoth for extra loot.',
+      },
+      {
+        id: 'act3-080',
+        title: 'Jiquani\'s Machinarium — Blackjaw (+10% Fire Res)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['resistance_fire'],
+        description:
+          'Enter Jiquani\'s Machinarium and summon Alva.\n\nFind the Small Soul Core and place it on a Stone Altar to open the boss arena.\n\nDefeat Blackjaw, The Remnant for permanent +10% fire resistance.\n\nTip: if you cannot find enough soul cores, respawn at checkpoint and re-check the map — new cores may appear.',
+      },
+      {
+        id: 'act3-090',
+        title: 'Jiquani\'s Sanctum — Zicoatl & Large Soul Core',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Enter Jiquani\'s Sanctum, summon Alva, and collect Medium Soul Cores to power two generators.\n\nInteract with the Large Soul Core, then defeat Zicoatl, Warden of the Core.\n\nOptional: Paquate\'s Mechanism and Corrupted Altar for corrupted item drops.\n\nBring the Large Soul Core back to the Stone Altar in Infested Barrens.',
+      },
+      {
+        id: 'act3-100',
+        title: 'Matlan Waterways — Drain the Flood',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Enter The Matlan Waterways, find and activate Control Levers to drain the flooded areas.\n\nOptional: Narag\'s Hut — defeat Narag of the Vile Word for extra loot.\n\nReturn to Ziggurat Encampment and speak with Alva after the waterways are drained.',
+      },
+      {
+        id: 'act3-110',
+        title: 'Drowned City — Temple Door Idol',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'gear'],
+        description:
+          'Enter The Drowned City and find the entrance to the Apex of Filth.\n\nCollect the Temple Door Idol and return to Alva at camp after clearing the path forward.',
+      },
+      {
+        id: 'act3-115',
+        title: 'Apex of Filth — Queen of Filth',
+        objectiveType: 'campaign',
+        rewardTags: ['progress', 'gear'],
+        description:
+          'Enter the Apex of Filth from The Drowned City and defeat the Queen of Filth.\n\nOptional: collect mushrooms dropped by enemies and throw them into the cauldron for Ultimate Life and Ultimate Mana flasks.',
+      },
+      {
+        id: 'act3-120',
+        title: 'Molten Vault — Mektul & Reforging Bench',
+        objectiveType: 'bench',
+        isOptional: true,
+        rewardTags: ['bench'],
+        description:
+          'Side quest Treasures of Utzaal: enter The Molten Vault, defeat Mektul, the Forgemaster, then speak with Oswald in camp to unlock the Reforging Bench.\n\nThis bench is essential for high-end item crafting in maps — do not skip if you plan to craft your own gear.',
+      },
+      {
+        id: 'act3-130',
+        title: 'Temple of Kopec — Ketzuli, High Priest',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Enter the Temple of Kopec and defeat Ketzuli, High Priest of the Sun.\n\nSummon Alva and ride the elevator back to Ziggurat Encampment, then enter the Gateway to continue toward Utzaal and Aggorat.',
+      },
+      {
+        id: 'act3-140',
+        title: 'Utzaal — Viper Napuatzi & Sacrificial Heart',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['passive_points'],
+        description:
+          'In Utzaal, defeat Viper Napuatzi and the Viper Legionnaires as part of the main path.\n\nFarm until a Sacrificial Heart drops from large enemies, then sacrifice it at the altar for +2 weapon-set passive skill points.\n\nOptional: search Peculiar Fortunes for extra loot.',
+      },
+      {
+        id: 'act3-145',
+        title: 'Aggorat — Approach to the Black Chambers',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Travel through Aggorat toward The Black Chambers for the Act 3 finale against Doryani.',
+      },
+      {
+        id: 'act3-150',
+        title: 'Black Chambers — Doryani (Act Boss)',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Enter Aggorat, travel to The Black Chambers, and defeat Doryani and Doryani\'s Triumph to rescue Alva and complete Act 3.\n\nTeleport to Ziggurat Encampment — The Hooded One directs you toward Act 4.',
+      },
+    ],
+  },
+  {
+    id: 'act4',
+    actNumber: 4,
+    name: 'Act 4 — Kingsmarch & the Isles',
+    tabLabel: 'Act 4',
+    sortOrder: 40,
+    description:
+      'Sail the island archipelago, complete ancestral trials, and finish The Search. Stack passive points, tattoos, flask bonuses, currency, and best-in-slot leveling jewelry.',
+    objectives: [
+      {
+        id: 'act4-010',
+        title: 'Kingsmarch — Set Sail (The Search Begins)',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Arrive in Kingsmarch and speak with Makoru. Use the ship to begin The Search quest — Act 4 is non-linear, but this is the narrative starting point.\n\nRecommended island order for power spikes (you can deviate):\n1. Kedge Bay / Dark Mists\n2. Shrike Island → Eye of Hinekora\n3. Abandoned Prison\n4. Whakapanu Island\n5. Isle of Kin → Volcanic Warrens\n6. Arastas → Ngakanu finale',
+      },
+      {
+        id: 'act4-020',
+        title: 'Kedge Bay — Dark Mists & Omniphobia (+2 Points)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['passive_points'],
+        description:
+          'Talk to Tujen in Kingsmarch to unlock the Dark Mists quest. Sail to Kedge Bay, rescue Freya Hartlin, and defeat Omniphobia, Fear Manifest (requires completing Dark Mists encounters first).\n\nReturn to the quest location and speak with Tujen for +2 weapon-set passive skill points and a Mist-shrouded Tome.\n\nAlso a source of liquid emotions — save some for the pearlescent amulet craft later.',
+      },
+      {
+        id: 'act4-030',
+        title: 'Shrike Island → Eye of Hinekora (+5% Max Mana)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['mana'],
+        description:
+          'Clear Abandoned Prison and Shrike Island as part of the main path (collect weapon pieces).\n\nRescue Matiki on Shrike Island to unlock access to the Eye of Hinekora.\n\nIn the Eye of Hinekora — The Silent Hall, interact with the respect prompt for permanent +5% maximum mana.',
+      },
+      {
+        id: 'act4-040',
+        title: 'Isle of Kin — Blind Beast (+2 Points) & Beast Pen',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['passive_points', 'gear'],
+        description:
+          'On Isle of Kin, defeat the Blind Beast for +2 weapon-set passive skill points.\n\nOptional: search outer walls for an interactable Lesser Jeweller\'s Orb.\n\nOptional: Beast Pen may drop a Level 12 Skill Gem + Level 4 Uncut Support (drop consistency unconfirmed).\n\nOptional: Blind Beast also drops a Greater Rune.',
+      },
+      {
+        id: 'act4-050',
+        title: 'Volcanic Warrens — Fire & Lightning Golems (Rare Rings)',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear'],
+        description:
+          'In Volcanic Warrens — Volcanic Nest, defeat the two golem bosses.\n\nWhichever you kill last determines your reward:\n• Ruby Ring (fire-weighted affixes)\n• Topaz Ring (lightning-weighted affixes)\n\nThese rings have heavily weighted mods and are often huge upgrades during leveling.',
+      },
+      {
+        id: 'act4-060',
+        title: 'Halls of the Dead — Trial of Ngkanu (Tattoos)',
+        objectiveType: 'trial',
+        isOptional: true,
+        rewardTags: ['resistance', 'attributes'],
+        description:
+          'Complete all three trials in Halls of the Dead and offer the tattoos for permanent choices:\n\n• Ngamahu\'s Test: +5% Fire Resistance OR +5 Strength\n• Tasalio\'s Test: +5% Cold Resistance OR +5 Intelligence\n• Tawhoa\'s Test: +5% Lightning Resistance OR +5 Dexterity\n\nPick resistances unless you desperately need attributes for gem requirements.',
+      },
+      {
+        id: 'act4-070',
+        title: 'Trail of the Ancestors — Yama the White (+2 Points)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['passive_points'],
+        description:
+          'Unlock after Land of the Kin / defeating Krutog. Find Hinekora in Halls of the Dead, complete the Tests of Mettle, defeat Yama the White, then speak with Hinekora at the end for +2 weapon-set passive skill points.',
+      },
+      {
+        id: 'act4-080',
+        title: 'Abandoned Prison — Goddess of Justice (Flask Recovery)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['flask'],
+        description:
+          'Find the Goddess of Justice in the Abandoned Prison and choose a swappable permanent bonus:\n• 30% increased Life Recovery from Flasks\n• 30% increased Mana Recovery from Flasks\n\nYou can return later to swap between them.',
+      },
+      {
+        id: 'act4-090',
+        title: 'Whakapanu — Crab Cave Support & Market',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear'],
+        description:
+          'On Whakapanu Island, clear Crab Cave for a Level 4 Uncut Support Gem.\n\nThis island also unlocks market/trading access for the Kingsmarch hub — useful for buying missing gems or gear.',
+      },
+      {
+        id: 'act4-100',
+        title: 'Singing Caverns — Pearlescent Amulet (All-Res)',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear', 'resistance'],
+        description:
+          'Find the Beckoning Clam in Singing Caverns and loot the Pearl.\n\nReturn to Rog in Kingsmarch to receive a Rare Pearlescent Amulet with an implicit granting #% to all elemental resistances — one of the best leveling accessories in the game.',
+      },
+      {
+        id: 'act4-110',
+        title: 'Arastas — Morning & Evening Bells (Currency)',
+        objectiveType: 'currency',
+        isOptional: true,
+        rewardTags: ['currency'],
+        description:
+          'On Arastas, interact with both bells:\n• Morning Bell — 3 Regal Orbs\n• Evening Bell — 3 Exalted Orbs\n\nAlso progress the main quest: reach the church, survive the ambush, enter The Excavation, and defeat Benedictus, First Herald of Utopia.',
+      },
+      {
+        id: 'act4-120',
+        title: 'Map Fragments — Logbook Unlock',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear'],
+        description:
+          'Collect four Map Fragments scattered across the various islands to unlock a Logbook expedition.\n\nNot required for campaign completion but valuable for early mapping economy.',
+      },
+      {
+        id: 'act4-130',
+        title: 'Ngakanu — Tavakai (Act 4 Finale)',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Sail to Ngakanu, enter the Heart of the Tribe, and defeat Tavakai to complete The Search and finish Act 4.\n\nReturn to Kingsmarch — The Hooded One sends you into the Interludes to recruit allies before endgame.',
+      },
+    ],
+  },
+  {
+    id: 'act5-2',
+    actNumber: 5,
+    name: 'Interlude — The Stolen Barya (Khari)',
+    tabLabel: 'Int. Khari',
+    sortOrder: 51,
+    description:
+      'Recruit the Maraketh by helping Sekhema Asala. Recommended FIRST among interludes (hardest scaling). Rewards: +2 passive points, +5% max life, swappable Qimah boons, rare jewelry, and currency from wells.',
+    objectives: [
+      {
+        id: 'act5-2-010',
+        title: 'Khari Crossing — Akthi & Anundr (+2 Passive Points)',
+        objectiveType: 'campaign',
+        rewardTags: ['passive_points', 'progress'],
+        description:
+          'Start The Stolen Barya interlude from Kingsmarch. Enter The Khari Crossing and defeat the boss duo Akthi, the Final Sting and Anundr, the Sandworm.\n\nSpeak with Risu afterward — this grants +2 weapon-set passive skill points.\n\nTip: do this interlude first while your character is strongest relative to zone level — area levels scale up as you complete other interludes.',
+      },
+      {
+        id: 'act5-2-020',
+        title: 'Skullmaw Stairway — Molten One\'s Gift (+5% Max Life)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['life'],
+        description:
+          'Inside Skullmaw Stairway, reach The Khari Crossing sub-zone and find the Molten Shrine at the end. Use Molten One\'s Gift for permanent +5% maximum life.\n\nBug workaround: if the door does not open, find and click seal(s) in Khari Crossing, then reset the instance (respawn at checkpoint / re-enter zone) and try again.',
+      },
+      {
+        id: 'act5-2-030',
+        title: 'Khari Crossing — Torbek Discount Vendor',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear'],
+        description:
+          'Find Torbek the merchant in The Khari Crossing. He sells several rare caster weapons at a steep discount — excellent if you are playing a spell-based build and still using leveling weapons.',
+      },
+      {
+        id: 'act5-2-040',
+        title: 'Qimah — Seven Pillars (Swappable Boons)',
+        objectiveType: 'reward',
+        isOptional: true,
+        rewardTags: ['utility'],
+        description:
+          'In Qimah, interact with the seven hidden pillars (check map edges and niches). Choose one permanent boon — you can change it by returning to Qimah:\n\n• +5 to all Attributes\n• +5% to all Elemental Resistances\n• +12% Cooldown Recovery Rate\n• +3% increased Movement Speed\n• +20% increased Presence Area of Effect\n• +15% increased Global Defences\n• +5% increased Experience gain BUT removes all other boon bonuses (not recommended)\n\nPopular picks: Global Defences or All Elemental Resistances.',
+      },
+      {
+        id: 'act5-2-050',
+        title: 'Sel Khari Sanctuary — Baryas & Rare Jewelry',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear'],
+        description:
+          'While clearing Sel Khari Sanctuary, find the Baryas of Rageen and Yoon. Place both on the pedestals (left and right sides of the map) to receive a choice of rare jewelry:\n\nPick 1 of 4 rare amulets AND 1 of 4 rare rings. Mods are weighted toward useful affixes — often immediate upgrades.',
+      },
+      {
+        id: 'act5-2-060',
+        title: 'Qimah Reservoir — Restore Wells (Currency)',
+        objectiveType: 'currency',
+        isOptional: true,
+        rewardTags: ['currency'],
+        description:
+          'In Qimah Reservoir, find vials and use them to restore the wells. Each restored well rewards currency (typically Exalted or Orb of Alchemy).\n\nClear the zone boss Azmadi, the Faridun Prince if you have not already.',
+      },
+      {
+        id: 'act5-2-070',
+        title: 'Galai Gates — Vornas, the Fell Flame',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Complete the Maraketh recruitment arc by clearing The Galai Gates and defeating Vornas, the Fell Flame.\n\nReturn to Sekhema Asala at the caravan — one of three interlude factions complete.',
+      },
+    ],
+  },
+  {
+    id: 'act5-3',
+    actNumber: 5,
+    name: 'Interlude — Doryani\'s Contingency (Kriar)',
+    tabLabel: 'Int. Kriar',
+    sortOrder: 52,
+    description:
+      'Climb Mount Kriar for the Vaal contingency. Recommended SECOND (early +40 spirit). Rewards: +40 spirit, +4 passive points, Level 14 skill gem, and a free unique item.',
+    objectives: [
+      {
+        id: 'act5-3-010',
+        title: 'Ashen Forest — Ancient Monument (Skill Gem L14)',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear'],
+        description:
+          'Enter through The Glade into Ashen Forest. Find the Ancient Monument interactable for an Uncut Skill Gem (Level 14) — strong upgrade for your main skill before endgame mapping.',
+      },
+      {
+        id: 'act5-3-020',
+        title: 'Kriar Village — Lythara (+40 Spirit)',
+        objectiveType: 'reward',
+        rewardTags: ['spirit', 'progress'],
+        description:
+          'Clear Kriar Village and defeat Lythara, the Wayward Spear for +40 maximum Spirit.\n\nThis is the largest single spirit reward in the campaign and often enables an extra spirit skill. Priority target if your build is spirit-starved.',
+      },
+      {
+        id: 'act5-3-030',
+        title: 'Howling Caves — Abominable Yeti (+2 Passive Points)',
+        objectiveType: 'reward',
+        rewardTags: ['passive_points'],
+        description:
+          'Find Howling Caves and defeat The Abominable Yeti for +2 weapon-set passive skill points.\n\nSide areas in this interlude scale quickly — do spirit and yeti rewards before pushing deeper if you are underleveled.',
+      },
+      {
+        id: 'act5-3-040',
+        title: 'Kriar Peaks — Elder Madox (Free Unique)',
+        objectiveType: 'gear',
+        isOptional: true,
+        rewardTags: ['gear'],
+        description:
+          'Speak with Elder Madox at Kriar Peaks and choose a free Unique item tailored to your build.\n\nReview options carefully — this is one of few guaranteed unique choices in the campaign.',
+      },
+      {
+        id: 'act5-3-050',
+        title: 'Cuachic Vault — Stormgore & Priests (Finale)',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Push through Glacial Tarn (Rakkar, the Frozen Talon), Etched Ravine, and The Cuachic Vault. Defeat Stormgore, the Guardian and the blood priest duo Zelina & Zolin.\n\nCompleting this interlude arc finishes Doryani\'s Contingency recruitment.',
+      },
+      {
+        id: 'act5-3-060',
+        title: 'Cuachic Vault — Complete Doryani\'s Contingency',
+        objectiveType: 'campaign',
+        rewardTags: ['progress'],
+        description:
+          'Finish the Kriar/Mount contingency line by clearing The Cuachic Vault bosses. Once done, two of three faction recruitments are complete — proceed to the Ogham interlude (Int. Ogham tab) or return to any remaining Khari objectives.',
+      },
+    ],
+  },
+  {
+    id: 'act5-1',
+    actNumber: 5,
+    name: 'Interlude — The Curse of Holten (Ogham)',
+    tabLabel: 'Int. Ogham',
+    sortOrder: 53,
+    description:
+      'Recruit the Ezomytes in frozen Ogham. Recommended LAST (easiest). Rewards: +2 passive points and discounted Greater Runes from the Ferryman.',
+    objectives: [
+      {
+        id: 'act5-1-010',
+        title: 'Holten — Soul of the Ferryman (Cheap Greater Runes)',
+        objectiveType: 'currency',
+        isOptional: true,
+        rewardTags: ['currency', 'gear'],
+        description:
+          'In Holten, find Soul of the Ferryman standing by the docks. He sells Greater Runes for ~2000 gold each — far below normal cost.\n\nBuy runes that match your weapon/body armour slots before mapping. Stock up on any rune you need for endgame gear preparation.',
+      },
+      {
+        id: 'act5-1-020',
+        title: 'Wolvenhold — Oswin, the Dread Warden (+2 Points)',
+        objectiveType: 'campaign',
+        rewardTags: ['passive_points', 'progress'],
+        description:
+          'Progress through Holten into Wolvenhold and defeat Oswin, the Dread Warden for +2 weapon-set passive skill points.\n\nThis is the shortest interlude — save it for last when other zones have scaled up, or use it as a quick passive point pickup after heavier interludes.',
+      },
+      {
+        id: 'act5-1-030',
+        title: 'All Interludes Done — Final Hooded One Check-in',
+        objectiveType: 'campaign',
+        rewardTags: ['passive_points', 'progress'],
+        description:
+          'Once Khari, Kriar, and Ogham interludes are all complete, confirm you received the final +2 passives from The Hooded One in Kingsmarch.\n\nCampaign checklist complete — you are ready for Atlas / endgame mapping.',
+      },
+    ],
+  },
+  {
+    id: 'act6',
+    actNumber: 6,
+    name: 'Act 6 — Coming Soon',
+    tabLabel: 'Act 6',
+    sortOrder: 60,
+    isAvailable: false,
+    description: 'Acts 5 and 6 will replace the interlude system on full release. Objectives will be added when available.',
+    objectives: [],
+  },
+]

@@ -1,0 +1,322 @@
+{
+  "arcs": {
+    "act1": {
+      "name": "Ato 1 — Ogham",
+      "tabLabel": "Ato 1",
+      "description": "Conclua a história de Ogham enquanto obtém buffs permanentes: +4 pontos passivos, +10% de resistência ao frio, +30 de espírito, +20 de vida máxima e a Bancada de Reciclagem."
+    },
+    "act2": {
+      "name": "Ato 2 — Vastiri",
+      "tabLabel": "Ato 2",
+      "description": "Atravesse o deserto, reúna o Horn of Vastiri e assalte o Dreadnought. Recompensas permanentes: +4 pontos passivos, +10% de resistência ao raio e um bônus intercambiável de charm ou flask."
+    },
+    "act3": {
+      "name": "Ato 3 — Utzaal / Vaal",
+      "tabLabel": "Ato 3",
+      "description": "Explore as ruínas Vaal, drene as vias d'água e enfrente Doryani. Recompensas permanentes: +4 pontos passivos, +30 de espírito, +10% de resistência ao fogo, uma escolha utilitária irreversível e a Bancada de Reforja."
+    },
+    "act4": {
+      "name": "Ato 4 — Kingsmarch e as Ilhas",
+      "tabLabel": "Ato 4",
+      "description": "Navegue pelo arquipélago, complete os julgamentos ancestrais e termine The Search. Acumule pontos passivos, tatuagens, bônus de flask, moeda e joias ideais para o leveling."
+    },
+    "act5-2": {
+      "name": "Interlúdio — The Stolen Barya (Khari)",
+      "tabLabel": "Int. Khari",
+      "description": "Recrute os Maraketh ajudando Sekhema Asala. Recomendado PRIMEIRO entre os interlúdios (escala mais difícil). Recompensas: +2 pontos passivos, +5% de vida máxima, bênçãos Qimah intercambiáveis, joias raras e moeda dos poços."
+    },
+    "act5-3": {
+      "name": "Interlúdio — Doryani's Contingency (Kriar)",
+      "tabLabel": "Int. Kriar",
+      "description": "Suba o Monte Kriar pela contingência Vaal. Recomendado SEGUNDO (cedo +40 de espírito). Recompensas: +40 de espírito, +4 pontos passivos, gema de skill nível 14 e um item único gratuito."
+    },
+    "act5-1": {
+      "name": "Interlúdio — The Curse of Holten (Ogham)",
+      "tabLabel": "Int. Ogham",
+      "description": "Recrute os Ezomytes em Ogham congelado. Recomendado POR ÚLTIMO (mais fácil). Recompensas: +2 pontos passivos e Greater Runes com desconto do Soul of the Ferryman."
+    },
+    "act6": {
+      "name": "Ato 6 — Em breve",
+      "tabLabel": "Ato 6",
+      "description": "Os Atos 5 e 6 substituirão o sistema de interlúdios no lançamento completo. Os objetivos serão adicionados quando estiverem disponíveis."
+    }
+  },
+  "objectives": {
+    "act1-010": {
+      "title": "The Riverbank — Derrote The Bloated Miller",
+      "description": "Comece a campanha em The Riverbank. Limpe a área e derrote The Bloated Miller no marco Besieged Encampment para liberar o caminho em direção a Clearfell.\n\nApós a luta, siga a trilha até o Clearfell Encampment e fale com Renly para concluir a missão Reaching Clearfell. Isso estabelece seu primeiro acampamento — use-o para vender lixo, gerenciar flasks e se preparar antes de entrar na selva."
+    },
+    "act1-020": {
+      "title": "Clearfell — Resistência ao Frio (Beira) + Loot Inicial",
+      "description": "Entre em Clearfell a partir do acampamento. Esta zona é sua primeira área real de farm — pegue qualquer upgrade de arma e melhoria de flask que encontrar.\n\nPico de poder opcional: caçe Beira Of The Rotten Pack para obter +10% permanente de resistência ao frio. O Ato 3 e zonas posteriores aplicam muito dano de frio; esse buff vale o desvio mesmo em speedruns.\n\nLoot opcional: procure o interativo Mysterious Campsite para uma Uncut Skill Gem (Level 1) garantida. Se tiver tempo, a área lateral Mud Burrow contém The Devourer — matá-lo e reportar de volta concede uma Uncut Skill Gem (L2), uma Uncut Support Gem (L1) e ouro."
+    },
+    "act1-030": {
+      "title": "The Grelwood — Secrets in the Dark",
+      "description": "Avance em Secrets in the Dark entrando em The Grelwood. Una aparece aqui — fale com ela para progredir na história.\n\nDesvios opcionais em Grelwood:\n• Areagne's Hut — derrote Areagne, Forgotten Witch para uma Uncut Skill Gem; interaja com o caldeirão para dois flasks médios de vida/mana.\n• The Brambleghast — dropa gemas de skill e de suporte.\n• Fale com Delwyn para desbloquear The Hunt Begins (tutorial da mecânica de liga Ritual).\n\nDepois de coletar as Runes of Power em The Red Vale, leve-as a Renly no Clearfell Encampment. Ele forja Rune Spikes que você usa na Tree of Souls aqui."
+    },
+    "act1-035": {
+      "title": "The Red Vale — Runes of Power",
+      "description": "A partir de The Grelwood, siga para The Red Vale e investigue os três Obelisks of Rust. Derrote inimigos e The Rust King em cada obelisco para coletar as três Runes of Power.\n\nVolte a Renly no Clearfell Encampment para que ele forje Rune Spikes para a Tree of Souls de volta em Grelwood.\n\nOpcional: saqueie suportes de armas refinadas em Red Vale para armas marciais de Tier 2."
+    },
+    "act1-040": {
+      "title": "Grim Tangle → Cemetery — The Mysterious Shade",
+      "description": "Após ativar a Tree of Souls em Grelwood, entre no Grim Tangle e invoque Una para continuar a linha de missões The Mysterious Shade.\n\nOpcional: derrote The Rotten Druid no Grim Tangle para uma Uncut Support Gem.\n\nAvance até encontrar a entrada do Cemetery of the Eternals. Você voltará aqui para a próxima grande cadeia de missões."
+    },
+    "act1-050": {
+      "title": "Sorrow Among Stones — Memorial Key e Lachlann",
+      "description": "No Cemetery of the Eternals, fale com Lachlann the Lost perto do waypoint Graveyard para iniciar Sorrow Among Stones.\n\nPasso a passo:\n1. Entre no Mausoleum of the Praetor e derrote Draven, Eternal Praetor para a primeira Memorial Key Piece.\n2. Opcional: encontre o interruptor oculto no Mausoleum para uma sala Forgotten Riches cheia de ouro.\n3. Saia para o Graveyard e entre no Tomb of the Consort.\n4. Opcional: derrote o guardião do Embattled Trove para loot extra e uma Uncut Support Gem.\n5. Derrote Asinia, Praetor Consort para a segunda Memorial Key Piece.\n6. Volte a Lachlann, abra o Memorial Gate e derrote Lachlann of Endless Lament para obter Count Lachlann's Ring.\n\nLoot opcional no cemitério: procure Ancient Ruins ou Sarcophagi para anéis (50/50 Iron Ring vs Lazuli Ring)."
+    },
+    "act1-060": {
+      "title": "Hunting Grounds — Crowbell (+2 Pontos Passivos)",
+      "description": "Vá para Hunting Grounds como parte de The Trail of Corruption. Antes de avançar para as fazendas, derrote Crowbell para +2 pontos passivos de skill no conjunto de armas (Book of Specialisation).\n\nOpcional: interrompa o Dryadic Ritual nesta região para uma Uncut Support Gem.\n\nDica de rota: Crowbell é um chefe rápido — sempre vale matá-lo no início de liga."
+    },
+    "act1-070": {
+      "title": "Freythorn — King In The Mist (+30 Espírito)",
+      "description": "Desvie para Freythorn (acessível pela área de Hunting Grounds) para completar encontros de Ominous Altars / Ritual até invocar The King In The Mist.\n\nDerrotá-lo concede:\n• +30 de espírito máximo (permanente)\n• Uncut Spirit Gem garantida na primeira morte\n\nEspírito é necessário para skills de companheiro e de aura — este é um dos objetivos opcionais de maior impacto em toda a campanha. Fortemente recomendado para qualquer build que use skills de espírito."
+    },
+    "act1-080": {
+      "title": "Ogham Farmlands — Alaúde de Una (+2 Pontos Passivos)",
+      "description": "Em Ogham Farmlands, encontre Una's Lute e entregue-a a Una no Clearfell Encampment para +2 pontos passivos de skill (missão The Lost Lute).\n\nOpcional: derrote Vargir the Feral Mutt no círculo de plantação para uma Uncut Skill Gem (L4).\n\nOpcional: mate o monstro de emboscada nas fazendas para outro drop de gema de skill."
+    },
+    "act1-090": {
+      "title": "Ogham Village — The Executioner e Smithing Tools",
+      "description": "Entre em Ogham Village e derrote The Executioner — chefe obrigatório da campanha para The Trail of Corruption.\n\nApós a luta, liberte Leitis da plataforma de execução e fale com ela.\n\nOpcional, mas altamente recomendado: localize as Smithing Tools na vila e entregue-as a Renly para desbloquear a Salvaging Bench (Finding the Forge). Também saqueie o baú do ferreiro ao lado das ferramentas para um Artificer's Orb e uma Blank Lesser Rune — Renly pode trocar a runa em branco por uma runa à sua escolha.\n\nVolte ao Clearfell Encampment e fale com Leitis para avançar na história."
+    },
+    "act1-100": {
+      "title": "The Manor Ramparts — Passagem para o Manor",
+      "description": "No caminho para Ogham Manor, atravesse The Manor Ramparts em direção ao pátio interno."
+    },
+    "act1-105": {
+      "title": "The Gallows — Gema de Suporte",
+      "description": "Opcional: na área The Gallows, corte a corda da forca para obter uma Uncut Support Gem. É um desvio curto para progressão de gemas antes do chefe do ato."
+    },
+    "act1-110": {
+      "title": "Ogham Manor — Candlemass (+20 Vida) e Count Geonor",
+      "description": "Entre em The Ogham Manor para o final do ato, The Mad Wolf of Ogham.\n\nBuff permanente opcional: clique no Psalm Of Madness para despertar Candlemass, The Living Rite e derrote-o para +20 de vida máxima.\n\nAvance até a arena e derrote Count Geonor para concluir o Ato 1. Volte ao Clearfell Encampment e fale com The Hooded One para viajar ao Ato 2."
+    },
+    "act2-010": {
+      "title": "Vastiri Outskirts — Earning Passage",
+      "description": "Fale com The Hooded One no Clearfell Encampment e viaje para Vastiri Outskirts para encontrar Zarka na Ardura Caravan.\n\nOpcional: saqueie o Devastated Camp para uma Uncut Support Gem (L2).\n\nContinue até Sun Clan Cliff e derrote o Rathbreaker para concluir Earning Passage. Volte a Zarka na caravana."
+    },
+    "act2-020": {
+      "title": "Mawdun Quarry & Mine — Rudja, Dread Engineer",
+      "description": "Use o Desert Map da caravana para chegar a Mawdun Quarry. Siga a parede externa para encontrar um acampamento oculto com um Artificer's Orb — fácil de perder, então encoste nas paredes ao explorar.\n\nEntre em Mawdun Mine e derrote Rudja, Dread Engineer. Liberte Risu, Faridun Defector da jaula depois e fale com ela de volta na Ardura Caravan.\n\nVá para The Halani Gates. Opcional: derrote L'im the Impaler antes de seguir."
+    },
+    "act2-030": {
+      "title": "Traitor's Passage — Balbala e Chave do Trial",
+      "description": "A partir da caravana, entre em Traitor's Passage.\n\nOpcional: saqueie o Bellchest para uma Uncut Skill Gem (L6).\n\nOpcional: derrote Balbala, the Traitor — ela dropa uma chave para o Trial of Sekhemas (trial de ascendência, ~nível 22). É separado da lista de buffs permanentes, mas crítico para o poder de ascendência.\n\nSuba a passagem até o topo de Halani Gates e lute contra Jamanra, the Risen King até ele fugir com cerca de 30% de vida em direção à tempestade de areia. Você precisa do Horn of Vastiri antes de persegui-lo."
+    },
+    "act2-040": {
+      "title": "Keth — Kabala (+2 Pontos) e Kabala Clan Relic",
+      "description": "Vá para Keth pela cadeia de missões The City of Seven Waters.\n\nDerrote Kabala, Constrictor Queen para +2 pontos passivos de skill.\n\nEnquanto limpa Keth, mate hienas até dropar a Kabala Clan Relic — você precisará dela para o altar em Valley of the Titans mais tarde (missão lateral Ancient Vows).\n\nOpcional: encontre a Treasure Room para um amuleto de base branca.\n\nOpcional: derrote The Ninth Treasure of Keth em The Lost City para uma joia aleatória e procure a Golden Tomb para uma Uncut Spirit Gem."
+    },
+    "act2-050": {
+      "title": "Buried Shrines — Azarian e Elemental Offering",
+      "description": "Encontre a entrada dos Buried Shrines e derrote Azarian, The Forsaken Son.\n\nOpcional: localize o santuário Elemental Offering e saqueie um dos três baús para um anel elemental mais a runa correspondente:\n• Ruby Ring + Desert Rune (fogo)\n• Topaz Ring + Storm Rune (raio)\n• Sapphire Ring + Glacial Rune (frio)\n\nEntre no Shrine of the Water Goddess, fale com Halani e use as Everburning Cinders para acendê-la e coletar a Essence of Water. Volte a Zarka na caravana."
+    },
+    "act2-060": {
+      "title": "Bone Pits — Sun Clan Relic e Mastodon Tusks",
+      "description": "Para A Theft of Ivory, vá a Mastodon Badlands e entre em The Bone Pits.\n\nOpcional: mate cobras até dropar a Sun Clan Relic (necessária para o altar em Valley of the Titans).\n\nContinue até Blackrib Pit e derrote Iktab, the Deathlord e Ekbab, Ancient Steed. Colete as Mastodon Tusks e devolva-as a Zarka na caravana."
+    },
+    "act2-070": {
+      "title": "Valley of the Titans — Altar de Relíquias (Bônus Intercambiável)",
+      "description": "Em Valley of the Titans, ative os três Ancient Seals e entregue as Kabala Clan Relic e Sun Clan Relic no altar central.\n\nEscolha um bônus permanente (pode trocar a qualquer momento voltando ao altar):\n• 30% de cargas de charm obtidas aumentadas\n• 15% de recuperação de vida por flasks aumentada\n\nEsta zona também tem um Abyss garantido — excelente para experiência e loot raro durante a limpeza.\n\nEntre em The Titan Grotto, chegue ao Dais of Reckoning e derrote Zalmarath, the Colossus para a Flame Ruby. Entregue a rubi a Zarka."
+    },
+    "act2-080": {
+      "title": "Deshar — Final Letter (+2 Pontos) e Watchful Twins",
+      "description": "Depois de montar o Horn of Vastiri, use-o na tempestade de areia para chegar a Deshar.\n\nOpcional: complete Tradition's Toll — encontre a Final Letter em um cadáver e entregue-a a Shambrin na caravana para +2 pontos passivos de skill.\n\nOpcional: saqueie recipientes ao longo da parede esquerda ou direita para um Artificer's Orb.\n\nOpcional: derrote os Watchful Twins para uma Barya nível 28 e loot raro."
+    },
+    "act2-090": {
+      "title": "Spires of Deshar — Sisters of Garukhan Shrine (+10% Res. Raio)",
+      "description": "Suba até The Spires of Deshar e interaja com o Sisters of Garukhan Shrine — sem luta de chefe, basta clicar no santuário para +10% permanente de resistência ao raio.\n\nEm seguida, derrote Tor Gul, The Defiler para continuar a missão principal."
+    },
+    "act2-100": {
+      "title": "Dreadnought — Jamanra, The Abomination (Chefe do Ato)",
+      "description": "Vá ao Dreadnought, entre no Dreadnought Vanguard e derrote Jamanra, The Abomination para concluir o Ato 2.\n\nVolte à Ardura Caravan e fale com The Hooded One e Sekhema Asala para iniciar o Ato 3."
+    },
+    "act3-010": {
+      "title": "Sandswept Marsh — Orok Campfire e Rootridge",
+      "description": "Fale com The Hooded One e explore Sandswept Marsh em direção ao Ziggurat Encampment.\n\nOpcional: encontre Orok Campfire e clique no Basket para um Lesser Jeweller's Orb garantido.\n\nOpcional: derrote Rootridge para uma Uncut Skill Gem (L9).\n\nOpcional: procure a Hanging Tree para loot extra."
+    },
+    "act3-020": {
+      "title": "Ziggurat Encampment — Encontre Alva, Oswald e Servi",
+      "description": "Chegue ao hub Ziggurat Encampment. Fale com Alva, Oswald e The Hooded One para estabelecer sua base do Ato 3.\n\nEste acampamento é o ponto central de várias idas e vindas de missão — crie o hábito de marcar waypoint aqui."
+    },
+    "act3-030": {
+      "title": "Jungle Ruins — Mighty Silverfist (+2 Pontos Passivos)",
+      "description": "Limpe Jungle Ruins como parte da linha Legacy of the Vaal.\n\nDerrote Mighty Silverfist para +2 pontos passivos de skill.\n\nOpcional: encontre o acampamento de comerciante com baús — o vendedor vende equipamento de alta qualidade e os baús contêm luvas raras; encontros com bestas aqui dropam gemas Tame Beast.\n\nOpcional: encontre a Jungle Grave e fale com Servi depois para escolher um cinto raro."
+    },
+    "act3-040": {
+      "title": "Infested Barrens — Canal Mechanism",
+      "description": "Entre em Infested Barrens e localize o Canal Mechanism para progredir na história principal.\n\nOpcional: encontre o segundo acampamento de comerciante (botas raras + spawns de bestas).\n\nOpcional: procure Troubled Camps para loot adicional."
+    },
+    "act3-050": {
+      "title": "Azak Bog — Ignagduk (+30 Espírito)",
+      "description": "Desvie para The Azak Bog e derrote Ignagduk, The Bog Witch (missão Tribal Vengeance).\n\nRecompensas:\n• +30 de espírito máximo (permanente)\n• Uncut Spirit Gem garantida na primeira morte\n\nFarm opcional de EXP: inicie o Flame Ritual em Azak Bog — mate ondas raras/mágicas, renasça no checkpoint e repita. Excelente spot de leveling até ~nível 34."
+    },
+    "act3-060": {
+      "title": "Venom Crypts — Venom Vial (Escolha Permanente)",
+      "description": "Entre em The Venom Crypts, encontre o Venom Vial em um cadáver e entregue-o a Servi no acampamento (The Slithering Dead).\n\nEscolha UM bônus permanente — não pode mudar depois:\n• 25% de limiar de atordoamento aumentado\n• 30% de limiar de aflições elementais aumentado\n• 25% de taxa de regeneração de mana aumentada\n\nRecomendação: regeneração de mana para builds de caster; limiar de atordoamento ou de aflições para setups corpo a corpo ou tanques."
+    },
+    "act3-070": {
+      "title": "Chimeral Wetlands — Xyclucian e Trial of Chaos",
+      "description": "Vá a Chimeral Wetlands e derrote Xyclucian, the Chimera.\n\nApós este chefe, o Trial of Chaos é desbloqueado (~nível 38) — complete-o para 2 pontos passivos de ascendência (separado desta lista, mas planeje com antecedência).\n\nOpcional: baú de ouro do Ravaged Camp; Toxic Bloom e The Noxious Behemoth para loot extra."
+    },
+    "act3-080": {
+      "title": "Jiquani's Machinarium — Blackjaw (+10% Res. Fogo)",
+      "description": "Entre em Jiquani's Machinarium e invoque Alva.\n\nEncontre a Small Soul Core e coloque-a em um Stone Altar para abrir a arena do chefe.\n\nDerrote Blackjaw, The Remnant para +10% permanente de resistência ao fogo.\n\nDica: se não encontrar soul cores suficientes, renasça no checkpoint e revise o mapa — novas cores podem aparecer."
+    },
+    "act3-090": {
+      "title": "Jiquani's Sanctum — Zicoatl e Large Soul Core",
+      "description": "Entre em Jiquani's Sanctum, invoque Alva e colete Medium Soul Cores para alimentar dois geradores.\n\nInteraja com a Large Soul Core e derrote Zicoatl, Warden of the Core.\n\nOpcional: Paquate's Mechanism e Corrupted Altar para drops de itens corrompidos.\n\nLeve a Large Soul Core de volta ao Stone Altar em Infested Barrens."
+    },
+    "act3-100": {
+      "title": "Matlan Waterways — Drene o Dilúvio",
+      "description": "Entre em The Matlan Waterways, encontre e ative os Control Levers para drenar as áreas alagadas.\n\nOpcional: Narag's Hut — derrote Narag of the Vile Word para loot extra.\n\nVolte ao Ziggurat Encampment e fale com Alva depois que as vias d'água forem drenadas."
+    },
+    "act3-110": {
+      "title": "Drowned City — Temple Door Idol",
+      "description": "Entre em The Drowned City e encontre a entrada do Apex of Filth.\n\nColete o Temple Door Idol e volte a Alva no acampamento após liberar o caminho à frente."
+    },
+    "act3-115": {
+      "title": "Apex of Filth — Queen of Filth",
+      "description": "Entre no Apex of Filth a partir de The Drowned City e derrote a Queen of Filth.\n\nOpcional: colete cogumelos dropados por inimigos e jogue-os no caldeirão para flasks Ultimate Life e Ultimate Mana."
+    },
+    "act3-120": {
+      "title": "Molten Vault — Mektul e Bancada de Reforja",
+      "description": "Missão lateral Treasures of Utzaal: entre em The Molten Vault, derrote Mektul, the Forgemaster e fale com Oswald no acampamento para desbloquear a Reforging Bench.\n\nEsta bancada é essencial para crafting de itens de alto nível em mapas — não pule se planeja craftar seu próprio equipamento."
+    },
+    "act3-130": {
+      "title": "Temple of Kopec — Ketzuli, High Priest",
+      "description": "Entre no Temple of Kopec e derrote Ketzuli, High Priest of the Sun.\n\nInvoque Alva e pegue o elevador de volta ao Ziggurat Encampment, depois entre no Gateway para seguir em direção a Utzaal e Aggorat."
+    },
+    "act3-140": {
+      "title": "Utzaal — Viper Napuatzi e Sacrificial Heart",
+      "description": "Em Utzaal, derrote Viper Napuatzi e os Viper Legionnaires como parte do caminho principal.\n\nFarme até dropar um Sacrificial Heart de inimigos grandes e sacrifique-o no altar para +2 pontos passivos de skill no conjunto de armas.\n\nOpcional: procure Peculiar Fortunes para loot extra."
+    },
+    "act3-145": {
+      "title": "Aggorat — Caminho para The Black Chambers",
+      "description": "Atravesse Aggorat em direção a The Black Chambers para o final do Ato 3 contra Doryani."
+    },
+    "act3-150": {
+      "title": "Black Chambers — Doryani (Chefe do Ato)",
+      "description": "Entre em Aggorat, vá a The Black Chambers e derrote Doryani e Doryani's Triumph para resgatar Alva e concluir o Ato 3.\n\nTeleporte para o Ziggurat Encampment — The Hooded One indica o caminho para o Ato 4."
+    },
+    "act4-010": {
+      "title": "Kingsmarch — Zarpe (The Search Começa)",
+      "description": "Chegue a Kingsmarch e fale com Makoru. Use o navio para iniciar a missão The Search — o Ato 4 é não linear, mas este é o ponto de partida narrativo.\n\nOrdem recomendada de ilhas para picos de poder (pode desviar):\n1. Kedge Bay / Dark Mists\n2. Shrike Island → Eye of Hinekora\n3. Abandoned Prison\n4. Whakapanu Island\n5. Isle of Kin → Volcanic Warrens\n6. Arastas → finale em Ngakanu"
+    },
+    "act4-020": {
+      "title": "Kedge Bay — Dark Mists e Omniphobia (+2 Pontos)",
+      "description": "Fale com Tujen em Kingsmarch para desbloquear a missão Dark Mists. Navegue até Kedge Bay, resgate Freya Hartlin e derrote Omniphobia, Fear Manifest (requer completar os encontros de Dark Mists antes).\n\nVolte ao local da missão e fale com Tujen para +2 pontos passivos de skill no conjunto de armas e um Mist-shrouded Tome.\n\nTambém é fonte de emoções líquidas — guarde algumas para o craft do amuleto perolado mais tarde."
+    },
+    "act4-030": {
+      "title": "Shrike Island → Eye of Hinekora (+5% Mana Máx.)",
+      "description": "Limpe Abandoned Prison e Shrike Island como parte do caminho principal (colete peças de arma).\n\nResgate Matiki em Shrike Island para desbloquear acesso ao Eye of Hinekora.\n\nNo Eye of Hinekora — The Silent Hall, interaja com o prompt de respeito para +5% permanente de mana máxima."
+    },
+    "act4-040": {
+      "title": "Isle of Kin — Blind Beast (+2 Pontos) e Beast Pen",
+      "description": "Em Isle of Kin, derrote o Blind Beast para +2 pontos passivos de skill no conjunto de armas.\n\nOpcional: procure nas paredes externas um Lesser Jeweller's Orb interativo.\n\nOpcional: Beast Pen pode dropar uma Skill Gem nível 12 + Uncut Support nível 4 (consistência do drop não confirmada).\n\nOpcional: o Blind Beast também dropa uma Greater Rune."
+    },
+    "act4-050": {
+      "title": "Volcanic Warrens — Golems de Fogo e Raio (Anéis Raros)",
+      "description": "Em Volcanic Warrens — Volcanic Nest, derrote os dois chefes golem.\n\nO último que você matar define a recompensa:\n• Ruby Ring (mods com peso de fogo)\n• Topaz Ring (mods com peso de raio)\n\nEsses anéis têm mods fortemente ponderados e costumam ser upgrades enormes durante o leveling."
+    },
+    "act4-060": {
+      "title": "Halls of the Dead — Trial of Ngkanu (Tatuagens)",
+      "description": "Complete os três trials em Halls of the Dead e ofereça as tatuagens para escolhas permanentes:\n\n• Ngamahu's Test: +5% de resistência ao fogo OU +5 de Força\n• Tasalio's Test: +5% de resistência ao frio OU +5 de Inteligência\n• Tawhoa's Test: +5% de resistência ao raio OU +5 de Destreza\n\nPrefira resistências, a menos que precise desesperadamente de atributos para requisitos de gemas."
+    },
+    "act4-070": {
+      "title": "Trail of the Ancestors — Yama the White (+2 Pontos)",
+      "description": "Desbloqueie após Land of the Kin / derrotar Krutog. Encontre Hinekora em Halls of the Dead, complete os Tests of Mettle, derrote Yama the White e fale com Hinekora no final para +2 pontos passivos de skill no conjunto de armas."
+    },
+    "act4-080": {
+      "title": "Abandoned Prison — Goddess of Justice (Recuperação de Flask)",
+      "description": "Encontre a Goddess of Justice em Abandoned Prison e escolha um bônus permanente intercambiável:\n• 30% de recuperação de vida por flasks aumentada\n• 30% de recuperação de mana por flasks aumentada\n\nVocê pode voltar depois para trocar entre eles."
+    },
+    "act4-090": {
+      "title": "Whakapanu — Crab Cave e Mercado",
+      "description": "Em Whakapanu Island, limpe Crab Cave para uma Uncut Support Gem nível 4.\n\nEsta ilha também desbloqueia acesso a mercado/comércio para o hub Kingsmarch — útil para comprar gemas ou equipamento que faltam."
+    },
+    "act4-100": {
+      "title": "Singing Caverns — Amuleto Perolado (Todas as Res.)",
+      "description": "Encontre o Beckoning Clam em Singing Caverns e saqueie a Pearl.\n\nVolte a Rog em Kingsmarch para receber um Rare Pearlescent Amulet com implícito que concede #% a todas as resistências elementais — um dos melhores acessórios de leveling do jogo."
+    },
+    "act4-110": {
+      "title": "Arastas — Sinos da Manhã e da Tarde (Moeda)",
+      "description": "Em Arastas, interaja com os dois sinos:\n• Morning Bell — 3 Regal Orbs\n• Evening Bell — 3 Exalted Orbs\n\nTambém avance na missão principal: chegue à igreja, sobreviva à emboscada, entre em The Excavation e derrote Benedictus, First Herald of Utopia."
+    },
+    "act4-120": {
+      "title": "Map Fragments — Desbloqueio de Logbook",
+      "description": "Colete quatro Map Fragments espalhados pelas várias ilhas para desbloquear uma expedição de Logbook.\n\nNão é obrigatório para concluir a campanha, mas vale muito para a economia inicial de mapping."
+    },
+    "act4-130": {
+      "title": "Ngakanu — Tavakai (Final do Ato 4)",
+      "description": "Navegue até Ngakanu, entre no Heart of the Tribe e derrote Tavakai para concluir The Search e finalizar o Ato 4.\n\nVolte a Kingsmarch — The Hooded One envia você aos Interlúdios para recrutar aliados antes do endgame."
+    },
+    "act5-2-010": {
+      "title": "The Khari Crossing — Akthi e Anundr (+2 Pontos Passivos)",
+      "description": "Inicie o interlúdio The Stolen Barya a partir de Kingsmarch. Entre em The Khari Crossing e derrote a dupla de chefes Akthi, the Final Sting e Anundr, the Sandworm.\n\nFale com Risu depois — isso concede +2 pontos passivos de skill no conjunto de armas.\n\nDica: faça este interlúdio primeiro enquanto seu personagem está mais forte em relação ao nível da zona — os níveis das áreas sobem conforme você completa outros interlúdios."
+    },
+    "act5-2-020": {
+      "title": "Skullmaw Stairway — Molten One's Gift (+5% Vida Máx.)",
+      "description": "Dentro de Skullmaw Stairway, chegue à subzona The Khari Crossing e encontre o Molten Shrine no final. Use Molten One's Gift para +5% permanente de vida máxima.\n\nContorno de bug: se a porta não abrir, encontre e clique no(s) selo(s) em Khari Crossing, depois resete a instância (renasça no checkpoint / reentre na zona) e tente de novo."
+    },
+    "act5-2-030": {
+      "title": "The Khari Crossing — Vendedor Torbek com Desconto",
+      "description": "Encontre o comerciante Torbek em The Khari Crossing. Ele vende várias armas raras de caster com grande desconto — excelente se você joga com magia e ainda usa armas de leveling."
+    },
+    "act5-2-040": {
+      "title": "Qimah — Sete Pilares (Bênçãos Intercambiáveis)",
+      "description": "Em Qimah, interaja com os sete pilares ocultos (verifique bordas do mapa e nichos). Escolha uma bênção permanente — pode mudá-la voltando a Qimah:\n\n• +5 a todos os atributos\n• +5% a todas as resistências elementais\n• +12% de taxa de recuperação de cooldown\n• +3% de velocidade de movimento aumentada\n• +20% de área de efeito de presença aumentada\n• +15% de defesas globais aumentadas\n• +5% de ganho de experiência aumentado, MAS remove todos os outros bônus de bênção (não recomendado)\n\nEscolhas populares: defesas globais ou todas as resistências elementais."
+    },
+    "act5-2-050": {
+      "title": "Sel Khari Sanctuary — Baryas e Joias Raras",
+      "description": "Enquanto limpa Sel Khari Sanctuary, encontre as Baryas of Rageen e Yoon. Coloque ambas nos pedestais (lados esquerdo e direito do mapa) para receber uma escolha de joias raras:\n\nEscolha 1 de 4 amuletos raros E 1 de 4 anéis raros. Os mods são ponderados para afixos úteis — muitas vezes upgrades imediatos."
+    },
+    "act5-2-060": {
+      "title": "Qimah Reservoir — Restaure os Poços (Moeda)",
+      "description": "Em Qimah Reservoir, encontre frascos e use-os para restaurar os poços. Cada poço restaurado recompensa com moeda (tipicamente Exalted ou Orb of Alchemy).\n\nLimpe o chefe da zona Azmadi, the Faridun Prince se ainda não o fez."
+    },
+    "act5-2-070": {
+      "title": "Galai Gates — Vornas, the Fell Flame",
+      "description": "Conclua o arco de recrutamento Maraketh limpando The Galai Gates e derrotando Vornas, the Fell Flame.\n\nVolte a Sekhema Asala na caravana — uma das três facções de interlúdio concluída."
+    },
+    "act5-3-010": {
+      "title": "Ashen Forest — Ancient Monument (Gema de Skill L14)",
+      "description": "Entre por The Glade em Ashen Forest. Encontre o interativo Ancient Monument para uma Uncut Skill Gem (Level 14) — upgrade forte para sua skill principal antes do mapping de endgame."
+    },
+    "act5-3-020": {
+      "title": "Kriar Village — Lythara (+40 Espírito)",
+      "description": "Limpe Kriar Village e derrote Lythara, the Wayward Spear para +40 de espírito máximo.\n\nEsta é a maior recompensa única de espírito na campanha e muitas vezes permite uma skill de espírito extra. Prioridade máxima se sua build está com pouco espírito."
+    },
+    "act5-3-030": {
+      "title": "Howling Caves — The Abominable Yeti (+2 Pontos Passivos)",
+      "description": "Encontre Howling Caves e derrote The Abominable Yeti para +2 pontos passivos de skill no conjunto de armas.\n\nÁreas laterais neste interlúdio escalam rápido — pegue as recompensas de espírito e do yeti antes de avançar mais fundo se estiver abaixo do nível."
+    },
+    "act5-3-040": {
+      "title": "Kriar Peaks — Elder Madox (Único Grátis)",
+      "description": "Fale com Elder Madox em Kriar Peaks e escolha um item Unique gratuito adequado à sua build.\n\nRevise as opções com cuidado — esta é uma das poucas escolhas garantidas de único na campanha."
+    },
+    "act5-3-050": {
+      "title": "The Cuachic Vault — Stormgore e Sacerdotes (Final)",
+      "description": "Avance por Glacial Tarn (Rakkar, the Frozen Talon), Etched Ravine e The Cuachic Vault. Derrote Stormgore, the Guardian e a dupla de sacerdotes de sangue Zelina e Zolin.\n\nConcluir este arco de interlúdio finaliza o recrutamento de Doryani's Contingency."
+    },
+    "act5-3-060": {
+      "title": "The Cuachic Vault — Conclua Doryani's Contingency",
+      "description": "Finalize a linha de contingência Kriar/Monte limpando os chefes de The Cuachic Vault. Depois disso, duas das três recrutasções de facção estão concluídas — siga para o interlúdio Ogham (aba Int. Ogham) ou volte a objetivos Khari restantes."
+    },
+    "act5-1-010": {
+      "title": "Holten — Soul of the Ferryman (Greater Runes Baratas)",
+      "description": "Em Holten, encontre Soul of the Ferryman à beira dos cais. Ele vende Greater Runes por cerca de 2000 de ouro cada — muito abaixo do custo normal.\n\nCompre runas compatíveis com os slots de arma e armadura de corpo antes do mapping. Estoque qualquer runa necessária para preparar o equipamento de endgame."
+    },
+    "act5-1-020": {
+      "title": "Wolvenhold — Oswin, the Dread Warden (+2 Pontos)",
+      "description": "Avance por Holten até Wolvenhold e derrote Oswin, the Dread Warden para +2 pontos passivos de skill no conjunto de armas.\n\nEste é o interlúdio mais curto — deixe para o final quando outras zonas já escalaram, ou use como coleta rápida de pontos passivos depois dos interlúdios mais pesados."
+    },
+    "act5-1-030": {
+      "title": "Todos os Interlúdios Concluídos — Check-in Final com The Hooded One",
+      "description": "Quando os interlúdios Khari, Kriar e Ogham estiverem todos concluídos, confirme que recebeu os +2 pontos passivos finais de The Hooded One em Kingsmarch.\n\nChecklist da campanha completa — você está pronto para o Atlas / mapping de endgame."
+    }
+  }
+}

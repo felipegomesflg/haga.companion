@@ -1,0 +1,59 @@
+// @see - https://www.electron.build/configuration/configuration
+{
+  "$schema": "https://raw.githubusercontent.com/electron-userland/electron-builder/master/packages/app-builder-lib/scheme.json",
+  "appId": "com.felgom.haga-overlay",
+  "asar": true,
+  "productName": "HAGA Companion",
+  "directories": {
+    "output": "release/${version}"
+  },
+  "files": [
+    "dist/**/*",
+    "dist-electron/**/*",
+    "package.json",
+    "!node_modules/**",
+    "node_modules/better-sqlite3/**",
+    "node_modules/bindings/**",
+    "node_modules/file-uri-to-path/**"
+  ],
+  "asarUnpack": [
+    "**/node_modules/better-sqlite3/**"
+  ],
+  "extraResources": [
+    {
+      "from": "data/runtime",
+      "to": "seeds",
+      "filter": ["*.json"]
+    },
+    {
+      "from": "data/runtime/pt",
+      "to": "seeds/pt",
+      "filter": ["*.json"]
+    }
+  ],
+  "mac": {
+    "target": ["dmg"],
+    "artifactName": "${productName}-Mac-${version}-Installer.${ext}"
+  },
+  "win": {
+    "icon": "public/logo.png",
+    "signAndEditExecutable": false,
+    "target": [
+      {
+        "target": "nsis",
+        "arch": ["x64"]
+      }
+    ],
+    "artifactName": "${productName}-Windows-${version}-Setup.${ext}"
+  },
+  "nsis": {
+    "oneClick": false,
+    "perMachine": false,
+    "allowToChangeInstallationDirectory": true,
+    "deleteAppDataOnUninstall": false
+  },
+  "linux": {
+    "target": ["AppImage"],
+    "artifactName": "${productName}-Linux-${version}.${ext}"
+  }
+}
