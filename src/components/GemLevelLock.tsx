@@ -93,14 +93,12 @@ export function GemLevelLock({
   const locked = isGemLocked(characterLevel, craftingLevel)
   const requiredLevel = getGemRequiredLevel(craftingLevel)
 
-  const content = children ?? (
-    <GemName name={name} color={color} unknown={unknown} variant={variant} className={className} />
-  )
+  const content = children ?? <GemName name={name} color={color} unknown={unknown} variant={variant} />
 
   return (
     <span
       ref={anchorRef}
-      className={`gem-level-lock ${locked ? 'gem-level-lock--locked' : ''}`.trim()}
+      className={`gem-level-lock ${locked ? 'gem-level-lock--locked' : ''} ${className}`.trim()}
       onMouseEnter={() => {
         if (locked && anchorRef.current) setAnchorRect(anchorRef.current.getBoundingClientRect())
       }}

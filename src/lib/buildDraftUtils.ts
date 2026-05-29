@@ -1,5 +1,7 @@
-import type { BudgetTier, BuildGemGroup, BuildItem, BuildProfile, PassiveTreeSlot } from '../types/build'
-import type { PersistBuildDraftInput, SaveBuildItemInput, SaveGemGroupInput, SaveTreeSlotInput } from '../types/ipc'
+import type { BuildGemGroup, BuildItem, BuildProfile, PassiveTreeSlot } from '../types/build'
+import type { PersistBuildDraftInput, SaveEquipPageInput, SaveGemPageInput, SaveTreeSlotInput } from '../types/ipc'
+import { draftEquipPagesToSaveInput, type DraftEquipPage } from './equipPages'
+import { draftPagesToSaveInput, type DraftGemPage } from './gemPages'
 
 export const NEW_BUILD_ID = '__new__'
 
@@ -14,57 +16,18 @@ export function nextBuildName(profiles: BuildProfile[]): string {
   return `${base} ${Date.now()}`
 }
 
-export function itemsForBudget(items: BuildItem[], budgetTier: BudgetTier): BuildItem[] {
-  return items.filter((item) => item.budgetTier === budgetTier)
-}
-
-export function upsertDraftItem(items: BuildItem[], next: BuildItem): BuildItem[] {
-  const withoutSlot = items.filter(
-    (item) => !(item.budgetTier === next.budgetTier && item.slotLabel === next.slotLabel),
-  )
-  if (next.isTwoHanded && next.slotLabel === 'weapon_main') {
-    return [...withoutSlot.filter((item) => !(item.budgetTier === next.budgetTier && item.slotLabel === 'weapon_off')), next]
-  }
-  return [...withoutSlot, next]
-}
-
 export function toPersistPayload(input: {
   buildId: string | null
   name: string
-  budgetTier: BudgetTier
-  gemGroups: BuildGemGroup[]
-  items: BuildItem[]
+  gemPages: DraftGemPage[]
+  equipPages: DraftEquipPage[]
   trees: PassiveTreeSlot[]
 }): PersistBuildDraftInput {
   return {
     buildId: input.buildId,
     name: input.name.trim() || 'New Build',
-    budgetTier: input.budgetTier,
-    gemGroups: input.gemGroups.map(
-      (group): SaveGemGroupInput => ({
-        id: group.id.startsWith('draft-') ? undefined : group.id,
-        mainGemId: group.mainGem!.gemId,
-        linkedGems: group.linkedGems.map((gem) => ({ gemId: gem.gemId, notes: gem.notes })),
-        notes: group.notes,
-      }),
-    ),
-    items: input.items.map(
-      (item): SaveBuildItemInput => ({
-        id: item.id.startsWith('draft-') ? undefined : item.id,
-        budgetTier: item.budgetTier,
-        rarity: item.rarity,
-        uniqueId: item.uniqueId,
-        baseItemId: item.baseItemId,
-        slotLabel: item.slotLabel,
-        priority: item.priority,
-        notes: item.notes,
-        mods: item.mods.map((mod) => ({
-          modId: mod.modId,
-          generationType: mod.generationType,
-          slotIndex: mod.slotIndex,
-        })),
-      }),
-    ),
+    gemPages: draftPagesToSaveInput(input.gemPages),
+    equipPages: draftEquipPagesToSaveInput(input.equipPages),
     trees: input.trees.map(
       (tree): SaveTreeSlotInput => ({
         slotIndex: tree.slotIndex,
@@ -76,44 +39,76 @@ export function toPersistPayload(input: {
 }
 
 export async function applyPoBImportToDraft(
-  items: BuildItem[],
-  pobItems: SaveBuildItemInput[],
-  pobGemGroups: SaveGemGroupInput[],
-): Promise<{ items: BuildItem[]; gemGroups: BuildGemGroup[] }> {
+  pobEquipPages: SaveEquipPageInput[],
+  pobGemPages: SaveGemPageInput[],
+): Promise<{ equipPages: DraftEquipPage[]; gemPages: DraftGemPage[] }> {
   console.log('[pob-import] aplicando ao draft', {
-    itensExistentes: items.length,
-    itensPoB: pobItems.length,
-    gruposGemPoB: pobGemGroups.length,
+    paginasEquipPoB: pobEquipPages.length,
+    itensEquipPoB: pobEquipPages.reduce((n, p) => n + p.items.length, 0),
+    paginasGemPoB: pobGemPages.length,
   })
 
-  let nextItems = [...items]
-  for (const input of pobItems) {
-    const preview = await window.haga.previewBuildItem(input)
-    console.log('[pob-import] preview item', {
-      slotLabel: preview.slotLabel,
-      budgetTier: preview.budgetTier,
-      rarity: preview.rarity,
-      uniqueName: preview.uniqueName,
-      baseItemName: preview.baseItemName,
+  const nextEquipPages: DraftEquipPage[] = []
+  for (let pageIndex = 0; pageIndex < pobEquipPages.length; pageIndex++) {
+    const pageInput = pobEquipPages[pageIndex]
+    const items: BuildItem[] = []
+    for (const input of pageInput.items) {
+      const preview = await window.haga.previewBuildItem(input)
+      console.log('[pob-import] preview item', {
+        page: pageInput.title,
+        slotLabel: preview.slotLabel,
+        rarity: preview.rarity,
+        uniqueName: preview.uniqueName,
+        baseItemName: preview.baseItemName,
+      })
+      items.push(preview)
+    }
+    nextEquipPages.push({
+      id: `draft-equip-page-${crypto.randomUUID()}`,
+      title: pageInput.title,
+      sortOrder: pageInput.sortOrder ?? pageIndex,
+      isActive: pageInput.isActive,
+      items,
     })
-    nextItems = upsertDraftItem(nextItems, preview)
   }
 
-  const nextGemGroups: BuildGemGroup[] = []
-  for (let index = 0; index < pobGemGroups.length; index++) {
-    const group = await window.haga.previewBuildGemGroup(pobGemGroups[index], index)
-    console.log('[pob-import] preview gem group', {
-      index,
-      mainGem: group.mainGem?.gemName ?? group.mainGem?.gemId,
-      linkedCount: group.linkedGems.length,
+  if (nextEquipPages.length > 0 && !nextEquipPages.some((p) => p.isActive)) {
+    nextEquipPages[0].isActive = true
+  }
+
+  const nextGemPages: DraftGemPage[] = []
+  for (let pageIndex = 0; pageIndex < pobGemPages.length; pageIndex++) {
+    const pageInput = pobGemPages[pageIndex]
+    const groups: BuildGemGroup[] = []
+    for (let groupIndex = 0; groupIndex < pageInput.gemGroups.length; groupIndex++) {
+      const group = await window.haga.previewBuildGemGroup(pageInput.gemGroups[groupIndex], groupIndex)
+      console.log('[pob-import] preview gem group', {
+        page: pageInput.title,
+        index: groupIndex,
+        mainGem: group.mainGem?.gemName ?? group.mainGem?.gemId,
+        linkedCount: group.linkedGems.length,
+      })
+      groups.push(group)
+    }
+    nextGemPages.push({
+      id: `draft-page-${pageIndex}-${crypto.randomUUID()}`,
+      title: pageInput.title,
+      sortOrder: pageInput.sortOrder ?? pageIndex,
+      isActive: pageInput.isActive,
+      groups,
     })
-    nextGemGroups.push(group)
+  }
+
+  if (nextGemPages.length > 0 && !nextGemPages.some((p) => p.isActive)) {
+    nextGemPages[0].isActive = true
   }
 
   console.log('[pob-import] draft atualizado', {
-    itensNoDraft: nextItems.length,
-    gruposGemNoDraft: nextGemGroups.length,
+    paginasEquipNoDraft: nextEquipPages.length,
+    itensTotal: nextEquipPages.reduce((n, p) => n + p.items.length, 0),
+    paginasGemNoDraft: nextGemPages.length,
+    gruposTotal: nextGemPages.reduce((n, p) => n + p.groups.length, 0),
   })
 
-  return { items: nextItems, gemGroups: nextGemGroups }
+  return { equipPages: nextEquipPages, gemPages: nextGemPages }
 }

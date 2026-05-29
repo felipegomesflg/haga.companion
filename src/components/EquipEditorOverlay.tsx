@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { BudgetTier, BuildItem, BuildProfile } from '../types/build'
+import type { BuildItem, BuildProfile } from '../types/build'
 import type { EquipmentSlotId } from '../lib/equipmentSlots'
 import { getRareDisplayName, getSlotDef, isMainHandSlot, isOffHandSlot } from '../lib/equipmentSlots'
 import type { SaveBuildItemInput } from '../types/ipc'
@@ -7,7 +7,7 @@ import { EditorOverlayFrame } from './EditorOverlayFrame'
 
 interface Props {
   build: BuildProfile
-  budgetTier: BudgetTier
+  pageId: string
   editingSlotId: EquipmentSlotId
   editingItem: BuildItem | null
   onClose: () => void
@@ -16,7 +16,7 @@ interface Props {
 
 type ItemOption = { id: string; name: string; itemClass: string }
 
-export function EquipEditorOverlay({ build, budgetTier, editingSlotId, editingItem, onClose, onSaveItem }: Props) {
+export function EquipEditorOverlay({ build, pageId, editingSlotId, editingItem, onClose, onSaveItem }: Props) {
   const slotDef = getSlotDef(editingSlotId)
   const [rarity, setRarity] = useState<'unique' | 'rare'>(editingItem?.rarity ?? 'unique')
   const [uniqueQuery, setUniqueQuery] = useState(editingItem?.uniqueName ?? '')
@@ -100,7 +100,7 @@ export function EquipEditorOverlay({ build, budgetTier, editingSlotId, editingIt
 
     const input: SaveBuildItemInput = {
       id: editingItem?.id,
-      budgetTier,
+      pageId,
       rarity,
       uniqueId: rarity === 'unique' ? uniqueId : null,
       baseItemId: rarity === 'rare' ? baseItemId : null,

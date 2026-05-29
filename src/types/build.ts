@@ -34,9 +34,26 @@ export interface RecommendedSupportGem {
   color: string | null
 }
 
+export interface BuildEquipPage {
+  id: string
+  buildId: string
+  title: string
+  sortOrder: number
+  isActive: boolean
+}
+
+export interface BuildGemPage {
+  id: string
+  buildId: string
+  title: string
+  sortOrder: number
+  isActive: boolean
+}
+
 export interface BuildGemGroup {
   id: string
   buildId: string
+  pageId: string
   sortOrder: number
   notes: string | null
   mainGem: BuildGemLink | null
@@ -55,7 +72,9 @@ export interface BuildItemMod {
 export interface BuildItem {
   id: string
   buildId: string
-  budgetTier: BudgetTier
+  pageId: string
+  /** @deprecated Legacy field — use equip pages instead */
+  budgetTier?: BudgetTier
   rarity: ItemRarity
   uniqueId: string | null
   uniqueName: string | null

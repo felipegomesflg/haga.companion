@@ -88,8 +88,23 @@ export const en = {
     gems: {
       characterName: 'In-game character name',
       characterNamePlaceholder: 'Exact character name',
-      noGroups: 'No gem groups yet. Add a group with one main gem (active or spirit) and up to 5 linked gems.',
+      characterLevel: 'Character level: {level}',
+      addPage: 'Add gem page',
+      activePageHint: 'Active page — level unlocks and highlights use this setup only.',
+      deletePageConfirm: 'Delete this gem page and all its groups?',
+      renamePagePrompt: 'Page name',
+      addGroup: 'Add gem group',
+      noGroups: 'No gem groups on this page. Add a group with one main gem (active or spirit) and up to 5 linked gems.',
       emptyGroup: 'Empty group',
+      renameGroupHint: 'Click name to rename · Enter to save',
+      renameTabHint: 'Click active tab to rename · Enter to save',
+    },
+    equips: {
+      addPage: 'Add equip page',
+      activePageHint: 'Switch pages to view different gear setups from your build or PoB import.',
+      deletePageConfirm: 'Delete this equip page and all its items?',
+      renamePagePrompt: 'Page name',
+      paperdollHint: 'Click a slot to assign gear · Right-click an item to pin its details',
     },
     gemEditor: {
       addTitle: 'Add Gem Group',
@@ -189,6 +204,7 @@ export type TranslationDict = {
     tabs: Record<keyof typeof en.build.tabs, string>
     budget: Record<keyof typeof en.build.budget, string>
     gems: Record<keyof typeof en.build.gems, string>
+    equips: Record<keyof typeof en.build.equips, string>
     gemEditor: Record<keyof typeof en.build.gemEditor, string>
     equipEditor: Record<keyof typeof en.build.equipEditor, string>
     pobImport: string

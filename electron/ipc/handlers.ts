@@ -128,13 +128,35 @@ export function registerIpcHandlers(): void {
   ipcMain.handle('haga:previewBuildGemGroup', (_e, input, sortOrder?: number) =>
     buildService.previewBuildGemGroup(input, sortOrder ?? 0),
   )
-  ipcMain.handle('haga:parsePoBImport', (_e, code: string, budgetTier: string) =>
-    parsePoBImportFromShareCode(code, budgetTier as SaveBuildItemInput['budgetTier']),
-  )
+  ipcMain.handle('haga:parsePoBImport', (_e, code: string) => parsePoBImportFromShareCode(code))
 
-  ipcMain.handle('haga:getBuildGemGroups', (_e, buildId: string) => buildService.getBuildGemGroups(buildId))
-  ipcMain.handle('haga:getBuildItems', (_e, buildId: string, budgetTier: string) =>
-    buildService.getBuildItems(buildId, budgetTier as SaveBuildItemInput['budgetTier']),
+  ipcMain.handle('haga:getBuildGemPages', (_e, buildId: string) => buildService.getBuildGemPages(buildId))
+  ipcMain.handle('haga:getBuildGemGroups', (_e, buildId: string, pageId?: string) =>
+    buildService.getBuildGemGroups(buildId, pageId),
+  )
+  ipcMain.handle('haga:setActiveGemPage', (_e, buildId: string, pageId: string) =>
+    buildService.setActiveGemPage(buildId, pageId),
+  )
+  ipcMain.handle('haga:createBuildGemPage', (_e, buildId: string, title: string) =>
+    buildService.createBuildGemPage(buildId, title),
+  )
+  ipcMain.handle('haga:renameBuildGemPage', (_e, pageId: string, title: string) =>
+    buildService.renameBuildGemPage(pageId, title),
+  )
+  ipcMain.handle('haga:deleteBuildGemPage', (_e, pageId: string) => buildService.deleteBuildGemPage(pageId))
+  ipcMain.handle('haga:getBuildEquipPages', (_e, buildId: string) => buildService.getBuildEquipPages(buildId))
+  ipcMain.handle('haga:setActiveEquipPage', (_e, buildId: string, pageId: string) =>
+    buildService.setActiveEquipPage(buildId, pageId),
+  )
+  ipcMain.handle('haga:createBuildEquipPage', (_e, buildId: string, title: string) =>
+    buildService.createBuildEquipPage(buildId, title),
+  )
+  ipcMain.handle('haga:renameBuildEquipPage', (_e, pageId: string, title: string) =>
+    buildService.renameBuildEquipPage(pageId, title),
+  )
+  ipcMain.handle('haga:deleteBuildEquipPage', (_e, pageId: string) => buildService.deleteBuildEquipPage(pageId))
+  ipcMain.handle('haga:getBuildItems', (_e, buildId: string, pageId?: string) =>
+    buildService.getBuildItems(buildId, pageId),
   )
   ipcMain.handle('haga:getPassiveTrees', (_e, buildId: string) => buildService.getPassiveTrees(buildId))
 

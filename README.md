@@ -10,13 +10,15 @@ External companion overlay for **Path of Exile 2** — campaign guidance, build 
 
 ## Download
 
-The first public release is available on GitHub:
+The latest public release is available on GitHub:
 
-**[HAGA Companion 0.1.0](https://github.com/felipegomesflg/haga.companion/releases/tag/0.1.0)** (Windows)
+**[HAGA Companion 0.2.0](https://github.com/felipegomesflg/haga.companion/releases/tag/0.2.0)** (Windows)
 
-1. Open the release page and download **`haga-companion.rar`**.
+1. Open the release page and download **`haga-companion.rar`** (or the Windows installer).
 2. Extract the archive to a folder on your PC (for example, `C:\Games\HAGA Companion\`).
 3. Run **`HAGA Companion.exe`** inside the extracted folder to launch the app.
+
+Previous release: [0.1.0](https://github.com/felipegomesflg/haga.companion/releases/tag/0.1.0).
 
 Newer versions will be published on the [Releases](https://github.com/felipegomesflg/haga.companion/releases) page when available.
 

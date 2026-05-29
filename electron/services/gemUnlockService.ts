@@ -50,7 +50,8 @@ function collectBuildGemIds(buildId: string): Array<{ gemId: string; craftingLev
     SELECT bg.gem_id as gemId
     FROM build_gems bg
     JOIN build_gem_groups bgg ON bgg.id = bg.group_id
-    WHERE bgg.build_id = ?
+    JOIN build_gem_pages bgp ON bgp.id = bgg.page_id
+    WHERE bgg.build_id = ? AND bgp.is_active = 1
   `,
     )
     .all(buildId) as Array<{ gemId: string }>

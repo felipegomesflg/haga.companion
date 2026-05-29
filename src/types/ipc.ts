@@ -1,6 +1,8 @@
 import type {
   AppSettings,
+  BuildEquipPage,
   BuildGemGroup,
+  BuildGemPage,
   BuildItem,
   BuildProfile,
   CampaignArc,
@@ -15,14 +17,23 @@ import type {
 
 export interface SaveGemGroupInput {
   id?: string
+  pageId?: string
   mainGemId: string
   linkedGems: Array<{ gemId: string; notes?: string | null }>
   notes?: string | null
 }
 
+export interface SaveGemPageInput {
+  id?: string
+  title: string
+  sortOrder?: number
+  isActive: boolean
+  gemGroups: SaveGemGroupInput[]
+}
+
 export interface SaveBuildItemInput {
   id?: string
-  budgetTier: BudgetTier
+  pageId?: string
   rarity: ItemRarity
   uniqueId?: string | null
   baseItemId?: string | null
@@ -34,6 +45,14 @@ export interface SaveBuildItemInput {
     generationType: 'prefix' | 'suffix'
     slotIndex: number
   }>
+}
+
+export interface SaveEquipPageInput {
+  id?: string
+  title: string
+  sortOrder?: number
+  isActive: boolean
+  items: SaveBuildItemInput[]
 }
 
 export interface SaveTreeSlotInput {
@@ -50,9 +69,8 @@ export interface UploadPassiveTreeImageInput {
 export interface PersistBuildDraftInput {
   buildId: string | null
   name: string
-  budgetTier: BudgetTier
-  gemGroups: SaveGemGroupInput[]
-  items: SaveBuildItemInput[]
+  gemPages: SaveGemPageInput[]
+  equipPages: SaveEquipPageInput[]
   trees: SaveTreeSlotInput[]
 }
 
@@ -74,8 +92,18 @@ export interface HagaApi {
   debugTriggerLevelUp: (targetLevel: number) => Promise<GemUnlockAlert[]>
   resetCharacterLevel: () => Promise<GameLocationState>
   getActiveBuild: () => Promise<BuildProfile | null>
-  getBuildGemGroups: (buildId: string) => Promise<BuildGemGroup[]>
-  getBuildItems: (buildId: string, budgetTier: BudgetTier) => Promise<BuildItem[]>
+  getBuildGemPages: (buildId: string) => Promise<BuildGemPage[]>
+  getBuildGemGroups: (buildId: string, pageId?: string) => Promise<BuildGemGroup[]>
+  setActiveGemPage: (buildId: string, pageId: string) => Promise<BuildGemPage[]>
+  createBuildGemPage: (buildId: string, title: string) => Promise<BuildGemPage>
+  renameBuildGemPage: (pageId: string, title: string) => Promise<BuildGemPage>
+  deleteBuildGemPage: (pageId: string) => Promise<void>
+  getBuildEquipPages: (buildId: string) => Promise<BuildEquipPage[]>
+  getBuildItems: (buildId: string, pageId?: string) => Promise<BuildItem[]>
+  setActiveEquipPage: (buildId: string, pageId: string) => Promise<BuildEquipPage[]>
+  createBuildEquipPage: (buildId: string, title: string) => Promise<BuildEquipPage>
+  renameBuildEquipPage: (pageId: string, title: string) => Promise<BuildEquipPage>
+  deleteBuildEquipPage: (pageId: string) => Promise<void>
   getPassiveTrees: (buildId: string) => Promise<PassiveTreeSlot[]>
   getSettings: () => Promise<AppSettings>
   saveSettings: (settings: Partial<AppSettings>) => Promise<AppSettings>
@@ -130,7 +158,7 @@ export interface HagaApi {
   persistBuildDraft: (input: PersistBuildDraftInput) => Promise<BuildProfile>
   previewBuildItem: (input: SaveBuildItemInput) => Promise<BuildItem>
   previewBuildGemGroup: (input: SaveGemGroupInput, sortOrder?: number) => Promise<BuildGemGroup>
-  parsePoBImport: (code: string, budgetTier: BudgetTier) => Promise<{ items: SaveBuildItemInput[]; gemGroups: SaveGemGroupInput[] }>
+  parsePoBImport: (code: string) => Promise<{ equipPages: SaveEquipPageInput[]; gemPages: SaveGemPageInput[] }>
   getItemTags: (rarity: ItemRarity, uniqueId?: string | null, baseItemId?: string | null) => Promise<string[]>
   getItemTagsForSlot: (slotLabel: string) => Promise<string[]>
   getBuildPanelCollapsed: () => Promise<boolean>

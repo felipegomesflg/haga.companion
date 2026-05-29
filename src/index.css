@@ -727,6 +727,7 @@ input, select, textarea {
 }
 
 .build-panel-shell--expanded {
+  position: relative;
   justify-content: flex-start;
 }
 
@@ -783,6 +784,11 @@ input, select, textarea {
   min-height: 0;
   height: 100%;
   border-radius: 0;
+  position: relative;
+}
+
+.editor-overlay-frame {
+  z-index: 50;
 }
 
 .build-panel-shell--dock-right .build-panel-main {
@@ -1098,6 +1104,84 @@ input, select, textarea {
   margin-bottom: 4px;
 }
 
+.gem-group-card__label-input {
+  border: 1px solid rgba(245, 158, 11, 0.5);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.95);
+  color: #fde68a;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 4px 8px;
+  outline: none;
+}
+
+.gem-page-bar {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.gem-page-bar__tabs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+
+.gem-page-bar__tab {
+  border: 1px solid rgba(100, 116, 139, 0.5);
+  border-radius: 6px;
+  background: rgba(30, 41, 59, 0.8);
+  color: #cbd5e1;
+  cursor: pointer;
+  font-size: 12px;
+  padding: 4px 10px;
+}
+
+.gem-page-bar__tab--active {
+  border-color: rgba(245, 158, 11, 0.7);
+  background: rgba(245, 158, 11, 0.15);
+  color: #fde68a;
+}
+
+.gem-page-bar__tab-input {
+  border: 1px solid rgba(245, 158, 11, 0.7);
+  border-radius: 6px;
+  background: rgba(15, 23, 42, 0.95);
+  color: #fde68a;
+  cursor: text;
+  font-size: 12px;
+  min-width: 72px;
+  max-width: 160px;
+  padding: 4px 8px;
+  outline: none;
+  pointer-events: auto;
+}
+
+.gem-page-bar__tab-input--active {
+  background: rgba(245, 158, 11, 0.12);
+}
+
+.gem-page-bar__add {
+  border: 1px dashed rgba(100, 116, 139, 0.6);
+  border-radius: 6px;
+  background: transparent;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+  min-width: 28px;
+  padding: 4px 8px;
+}
+
+.gem-page-bar__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
 .gem-group-card {
   border: 1px solid rgba(100, 116, 139, 0.45);
   border-radius: 8px;
@@ -1125,8 +1209,6 @@ input, select, textarea {
   margin: 10px 0 0 22px;
   padding: 0;
   list-style: none;
-  border-left: 2px solid rgba(245, 158, 11, 0.35);
-  padding-left: 10px;
 }
 
 .gem-group-card__linked-item {
@@ -1195,10 +1277,6 @@ input, select, textarea {
 
 .gem-border--unknown {
   border-left: 3px solid #c084fc;
-  padding-left: 8px;
-}
-
-.gem-name--bordered {
   padding-left: 8px;
 }
 
@@ -1608,22 +1686,15 @@ input, select, textarea {
   margin: -3px -5px;
 }
 
-.dev-level-gem-list__row--current,
-.gem-at-level--current {
+/* Level-up highlight: background only — gem color stays on border-left of .gem-border--* */
+.gem-level-lock.gem-at-level--highlight {
+  border-radius: 4px;
+  background: rgba(251, 191, 36, 0.12);
+}
+
+.dev-level-gem-list__row.gem-at-level--highlight {
   border-radius: 6px;
-  border: 1px solid rgba(251, 191, 36, 0.45);
-  background: rgba(251, 191, 36, 0.1);
-  box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.08);
-}
-
-.gem-group-card__header .gem-at-level--current {
-  padding: 3px 5px;
-  margin: -3px -5px;
-}
-
-.gem-group-card__linked-item.gem-at-level--current {
-  padding-left: 8px;
-  margin-left: -2px;
+  background: rgba(251, 191, 36, 0.08);
 }
 
 .dev-level-gem-list__gem {

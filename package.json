@@ -1,7 +1,7 @@
 {
   "name": "haga-overlay",
   "private": true,
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Path of Exile 2 companion overlay",
   "author": "FELGOM LTDA",
   "type": "module",
@@ -13,6 +13,7 @@
     "build:campaign": "node scripts/build-campaign-objectives.mjs",
     "build:campaign-pt": "node scripts/apply-campaign-pt-translations.mjs && node scripts/build-campaign-objectives-pt.mjs",
     "seed:data": "node scripts/build-zone-locale-map.mjs && node scripts/build-campaign-objectives.mjs && node scripts/build-campaign-objectives-pt.mjs && node scripts/run-seed.mjs",
+    "decode:pob": "node scripts/decode-pob-share.mjs",
     "postinstall": "electron-rebuild -f -w better-sqlite3",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
     "preview": "vite preview"

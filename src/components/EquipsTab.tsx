@@ -1,41 +1,56 @@
-import type { BudgetTier, BuildItem } from '../types/build'
+import type { BuildItem } from '../types/build'
+import { useI18n } from '../hooks/useI18n'
+import type { DraftEquipPage } from '../lib/equipPages'
+import { EditablePageBar } from './EditablePageBar'
 import { EquipmentPaperdoll } from './EquipmentPaperdoll'
 import type { EquipmentSlotId } from '../lib/equipmentSlots'
 
-const BUDGET_LABELS: Record<BudgetTier, string> = {
-  early: 'Early Budget',
-  medium: 'Medium Budget',
-  high: 'High Budget',
-}
-
 interface Props {
+  pages: DraftEquipPage[]
   items: BuildItem[]
-  budgetTier: BudgetTier
-  onBudgetChange: (tier: BudgetTier) => void
+  autoEditPageId?: string | null
+  onAutoEditPageDone?: () => void
+  onSelectPage: (pageId: string) => void
+  onAddPage: () => void
+  onRenamePage: (pageId: string, title: string) => void
+  onDeletePage: (pageId: string) => void
   onEditSlot: (slotId: EquipmentSlotId, item: BuildItem | null) => void
 }
 
-export function EquipsTab({ items, budgetTier, onBudgetChange, onEditSlot }: Props) {
+export function EquipsTab({
+  pages,
+  items,
+  autoEditPageId,
+  onAutoEditPageDone,
+  onSelectPage,
+  onAddPage,
+  onRenamePage,
+  onDeletePage,
+  onEditSlot,
+}: Props) {
+  const { t } = useI18n()
+
   return (
     <div className="space-y-4 text-sm">
-      <label className="flex items-center gap-2">
-        <span className="text-slate-400">Budget:</span>
-        <select
-          value={budgetTier}
-          onChange={(e) => onBudgetChange(e.target.value as BudgetTier)}
-          className="flex-1"
-        >
-          {(Object.keys(BUDGET_LABELS) as BudgetTier[]).map((tier) => (
-            <option key={tier} value={tier}>
-              {BUDGET_LABELS[tier]}
-            </option>
-          ))}
-        </select>
-      </label>
+      <EditablePageBar
+        pages={pages}
+        autoEditPageId={autoEditPageId}
+        onAutoEditDone={onAutoEditPageDone}
+        onSelectPage={onSelectPage}
+        onAddPage={onAddPage}
+        onRenamePage={onRenamePage}
+        onDeletePage={onDeletePage}
+        ariaLabel="Equipment pages"
+        labels={{
+          addPage: t.build.equips.addPage,
+          deletePage: t.common.delete,
+          activeHint: t.build.equips.activePageHint,
+          deleteConfirm: t.build.equips.deletePageConfirm,
+          renameTabHint: t.build.gems.renameTabHint,
+        }}
+      />
 
-      <p className="text-center text-xs text-slate-500">
-        Click a slot to assign gear · Right-click an item to pin its details
-      </p>
+      <p className="text-center text-xs text-slate-500">{t.build.equips.paperdollHint}</p>
 
       <EquipmentPaperdoll items={items} onEditSlot={onEditSlot} />
     </div>

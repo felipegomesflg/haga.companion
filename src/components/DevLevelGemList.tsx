@@ -1,7 +1,6 @@
 import { useMemo, useState } from 'react'
 import type { BuildGemGroup, BuildGemLink } from '../types/build'
 import { GemLevelLock } from './GemLevelLock'
-import { gemColorBorderClass } from '../lib/gemColors'
 import { getGemRequiredLevel, isGemAtCurrentLevel } from '../lib/gemLevel'
 
 interface Props {
@@ -32,19 +31,16 @@ function GemRow({
   const atCurrentLevel = isGemAtCurrentLevel(gem.craftingLevel, characterLevel)
 
   return (
-    <div className={`dev-level-gem-list__row ${atCurrentLevel ? 'gem-at-level--current' : ''}`.trim()}>
-      <div
-        className={`dev-level-gem-list__gem ${gem.isUnknown ? 'gem-border--unknown' : gemColorBorderClass(gem.color)} ${variant === 'border' ? 'gem-name--bordered' : ''}`.trim()}
-      >
-        <GemLevelLock
-          name={gem.gemName}
-          color={gem.color}
-          unknown={gem.isUnknown}
-          craftingLevel={gem.craftingLevel}
-          characterLevel={characterLevel}
-          variant={variant}
-        />
-      </div>
+    <div className={`dev-level-gem-list__row ${atCurrentLevel ? 'gem-at-level--highlight' : ''}`.trim()}>
+      <GemLevelLock
+        name={gem.gemName}
+        color={gem.color}
+        unknown={gem.isUnknown}
+        craftingLevel={gem.craftingLevel}
+        characterLevel={characterLevel}
+        variant={variant}
+        className="dev-level-gem-list__gem min-w-0 flex-1"
+      />
       <GemLevelBadge gem={gem} highlighted={atCurrentLevel} />
     </div>
   )

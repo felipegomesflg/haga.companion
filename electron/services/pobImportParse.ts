@@ -1,70 +1,39 @@
-import type { BudgetTier } from '../../src/types/build'
-
-import type { SaveBuildItemInput, SaveGemGroupInput } from '../../src/types/ipc'
-
+import type { SaveBuildItemInput, SaveEquipPageInput, SaveGemPageInput } from '../../src/types/ipc'
 import { decodePoBShareCode } from './pobDecodeService'
-
+import { parsePoBEquipPagesFromXml } from './pobEquipPagesImport'
 import { pobImportLog, pobImportSection, pobImportStructure } from './pobImportLog'
-
-import { parsePoBItemInputsFromXml } from './pobItemImport'
-
-import { parsePoBGemGroupInputsFromXml } from './pobSkillImport'
-
-
+import { parsePoBGemPagesFromXml } from './pobSkillImport'
 
 export interface PoBParsedImport {
-
-  items: SaveBuildItemInput[]
-
-  gemGroups: SaveGemGroupInput[]
-
+  equipPages: SaveEquipPageInput[]
+  gemPages: SaveGemPageInput[]
 }
 
-
-
-export function parsePoBImportFromShareCode(shareCode: string, budgetTier: BudgetTier): PoBParsedImport {
-
+export function parsePoBImportFromShareCode(shareCode: string): PoBParsedImport {
   pobImportSection('início do import PoB')
-
-  pobImportLog('budget tier alvo', { budgetTier })
-
-
 
   const xml = decodePoBShareCode(shareCode)
 
   pobImportLog('XML decodificado', {
-
     length: xml.length,
-
     hasItems: xml.includes('<Items'),
-
     hasSkills: xml.includes('<Skills'),
-
     rootTag: xml.match(/<(\w+)/)?.[1] ?? null,
-
   })
 
-
-
-  const items = parsePoBItemInputsFromXml(xml, budgetTier)
-
-  const gemGroups = parsePoBGemGroupInputsFromXml(xml)
-
-
+  const equipPages = parsePoBEquipPagesFromXml(xml)
+  const { pages: gemPages } = parsePoBGemPagesFromXml(xml)
 
   pobImportSection('resultado final para draft')
 
   pobImportStructure('payload PoB → HAGA', {
-    itemCount: items.length,
-    gemGroupCount: gemGroups.length,
-    items,
-    gemGroups,
+    equipPageCount: equipPages.length,
+    equipItemCount: equipPages.reduce((n, p) => n + p.items.length, 0),
+    gemPageCount: gemPages.length,
+    gemGroupCount: gemPages.reduce((n, p) => n + p.gemGroups.length, 0),
+    equipPages,
+    gemPages,
   })
 
-
-
-  return { items, gemGroups }
-
+  return { equipPages, gemPages }
 }
-
-

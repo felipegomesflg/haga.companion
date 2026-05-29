@@ -20,6 +20,10 @@ data/runtime/pt/*.db
 # Local overrides (optional user data)
 data/runtime/pt/campaign_objectives.json
 
+# Local PoB decode (npm run decode:pob)
+scripts/pob-share-input.txt
+data/runtime/pob-decoded*.xml
+
 # Environment
 .env
 .env.*

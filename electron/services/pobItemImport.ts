@@ -10,7 +10,8 @@ import { pobImportLog, pobImportSection, pobImportStructure, pobImportWarn } fro
 
 import { importPoBSkillsFromXml } from './pobSkillImport'
 
-import { getActiveBuild, saveBuildItem } from './buildService'
+import { getActiveBuild, saveBuildEquipPagesPoB } from './buildService'
+import { parsePoBEquipPagesFromXml } from './pobEquipPagesImport'
 
 import type { BudgetTier } from '../../src/types/build'
 
@@ -331,359 +332,45 @@ function resolveBaseItemId(name: string): string | null {
 
 
 function summarizeItemInput(input: SaveBuildItemInput) {
-
   return {
-
     slotLabel: input.slotLabel,
-
-    budgetTier: input.budgetTier,
-
+    pageId: input.pageId,
     rarity: input.rarity,
-
     uniqueId: input.uniqueId,
-
     baseItemId: input.baseItemId,
-
     notesLines: input.notes?.split('\n').length ?? 0,
-
     mods: input.mods.length,
-
   }
-
 }
 
-
-
-export function parsePoBItemInputsFromXml(xml: string, budgetTier: BudgetTier): SaveBuildItemInput[] {
-
-  pobImportSection('itens')
-
-
-
-  const items = parsePoBItems(xml)
-
-  const activeItemSetId = getActiveItemSetId(xml)
-
-  const slots = parseActiveItemSetSlots(xml)
-
-  const skipped: SkippedPoBItem[] = []
-
-
-
-  pobImportLog('item set ativo', { activeItemSetId, itemSetsNoXml: listItemSetIds(xml) })
-
-  pobImportLog('itens parseados no XML', {
-
-    count: items.size,
-
-    entries: [...items.values()].map((item) => ({
-
-      pobItemId: item.pobItemId,
-
-      rarity: item.rarity,
-
-      name: item.name,
-
-      baseName: item.baseName,
-
-      implicitMods: item.implicitMods.length,
-
-      explicitMods: item.explicitMods.length,
-
-    })),
-
-  })
-
-  pobImportLog('slots equipados no item set ativo', slots)
-
-
-
-  if (slots.length === 0) {
-
-    pobImportWarn('nenhum slot com item no item set ativo', {
-
-      activeItemSetId,
-
-      itemSetsNoXml: listItemSetIds(xml),
-
-      hasItemsBlock: xml.includes('<Items'),
-
-    })
-
-  }
-
-
-
-  const inputs: SaveBuildItemInput[] = []
-
-
-
-  for (const slot of slots) {
-
-    const hagaSlot = mapPoBSlotName(slot.pobSlotName)
-
-    if (!hagaSlot) {
-
-      skipped.push({
-
-        pobSlot: slot.pobSlotName,
-
-        pobItemId: slot.pobItemId,
-
-        reason: 'slot_nao_mapeado',
-
-      })
-
-      continue
-
-    }
-
-
-
-    const pobItem = items.get(slot.pobItemId)
-
-    if (!pobItem) {
-
-      skipped.push({
-
-        pobSlot: slot.pobSlotName,
-
-        pobItemId: slot.pobItemId,
-
-        reason: 'item_id_nao_encontrado_no_xml',
-
-        detail: { hagaSlot },
-
-      })
-
-      continue
-
-    }
-
-
-
-    if (pobItem.rarity === 'other') {
-
-      skipped.push({
-
-        pobSlot: slot.pobSlotName,
-
-        pobItemId: slot.pobItemId,
-
-        reason: 'raridade_nao_suportada',
-
-        detail: { hagaSlot, name: pobItem.name, baseName: pobItem.baseName },
-
-      })
-
-      continue
-
-    }
-
-
-
-    const notes = formatPoBItemNotes(pobItem.implicitMods, pobItem.explicitMods)
-
-
-
-    if (pobItem.rarity === 'unique') {
-
-      const uniqueId = resolveUniqueId(pobItem.name)
-
-      if (!uniqueId) {
-
-        skipped.push({
-
-          pobSlot: slot.pobSlotName,
-
-          pobItemId: slot.pobItemId,
-
-          reason: 'unique_nao_encontrado_na_db',
-
-          detail: { hagaSlot, name: pobItem.name },
-
-        })
-
-        continue
-
-      }
-
-
-
-      const input: SaveBuildItemInput = {
-
-        budgetTier,
-
-        rarity: 'unique',
-
-        uniqueId,
-
-        baseItemId: null,
-
-        slotLabel: hagaSlot,
-
-        priority: 0,
-
-        notes: notes || null,
-
-        mods: [],
-
-      }
-
-      inputs.push(input)
-
-      pobImportLog('aceito', {
-
-        pobSlot: slot.pobSlotName,
-
-        hagaSlot,
-
-        rarity: 'unique',
-
-        name: pobItem.name,
-
-        uniqueId,
-
-      })
-
-      continue
-
-    }
-
-
-
-    const baseItemId = resolveBaseItemId(pobItem.baseName)
-
-    if (!baseItemId) {
-
-      skipped.push({
-
-        pobSlot: slot.pobSlotName,
-
-        pobItemId: slot.pobItemId,
-
-        reason: 'base_nao_encontrada_na_db',
-
-        detail: { hagaSlot, rareName: pobItem.name, baseName: pobItem.baseName },
-
-      })
-
-      continue
-
-    }
-
-
-
-    const input: SaveBuildItemInput = {
-
-      budgetTier,
-
-      rarity: 'rare',
-
-      uniqueId: null,
-
-      baseItemId,
-
-      slotLabel: hagaSlot,
-
-      priority: 0,
-
-      notes: notes || null,
-
-      mods: [],
-
-    }
-
-    inputs.push(input)
-
-    pobImportLog('aceito', {
-
-      pobSlot: slot.pobSlotName,
-
-      hagaSlot,
-
-      rarity: 'rare',
-
-      name: pobItem.name,
-
-      baseName: pobItem.baseName,
-
-      baseItemId,
-
-    })
-
-  }
-
-
-
-  pobImportLog('resumo itens', {
-
-    aceitos: inputs.length,
-
-    ignorados: skipped.length,
-
-    budgetTier,
-
-  })
-
-
-
-  if (skipped.length > 0) {
-
-    pobImportStructure('itens ignorados', skipped)
-
-  }
-
-
-
-  pobImportStructure('SaveBuildItemInput[] (itens para HAGA)', inputs.map(summarizeItemInput))
-
-
-
-  return inputs
-
+export function parsePoBItemInputsFromXml(xml: string, _budgetTier?: BudgetTier): SaveBuildItemInput[] {
+  const pages = parsePoBEquipPagesFromXml(xml)
+  const active = pages.find((page) => page.isActive) ?? pages[0]
+  return active?.items ?? []
 }
 
-
-
-export function importPoBItemsFromXml(buildId: string, xml: string, budgetTier: BudgetTier): PoBItemImportResult {
-
-  const inputs = parsePoBItemInputsFromXml(xml, budgetTier)
-
-  const result: PoBItemImportResult = { imported: inputs.length, skipped: [] }
-
-
-
-  for (const input of inputs) {
-
-    saveBuildItem(buildId, input)
-
+export function importPoBItemsFromXml(buildId: string, xml: string, _budgetTier?: BudgetTier): PoBItemImportResult {
+  const equipPages = parsePoBEquipPagesFromXml(xml)
+  saveBuildEquipPagesPoB(buildId, equipPages)
+  return {
+    imported: equipPages.reduce((count, page) => count + page.items.length, 0),
+    skipped: [],
   }
-
-
-
-  return result
-
 }
-
-
 
 export function importPoBItemsFromShareCode(shareCode: string): PoBItemImportResult {
-
   const build = getActiveBuild()
-
   if (!build) throw new Error('No active build selected.')
 
-
-
   const xml = decodePoBShareCode(shareCode)
-
-  const result = importPoBItemsFromXml(build.id, xml, build.activeBudgetTier)
-
+  const equipPages = parsePoBEquipPagesFromXml(xml)
+  saveBuildEquipPagesPoB(build.id, equipPages)
   importPoBSkillsFromXml(build.id, xml)
 
-  return result
-
+  return {
+    imported: equipPages.reduce((n, page) => n + page.items.length, 0),
+    skipped: [],
+  }
 }
 
 

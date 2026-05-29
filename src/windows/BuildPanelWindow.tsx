@@ -4,12 +4,32 @@ import type { SaveBuildItemInput, SaveGemGroupInput } from '../types/ipc'
 import type { EquipmentSlotId } from '../lib/equipmentSlots'
 import {
   applyPoBImportToDraft,
-  itemsForBudget,
   NEW_BUILD_ID,
   nextBuildName,
   toPersistPayload,
-  upsertDraftItem,
 } from '../lib/buildDraftUtils'
+import {
+  createDraftGemPage,
+  createEmptyDraftGemGroup,
+  defaultDraftGemPages,
+  DRAFT_GEM_PAGE_PREFIX,
+  getActiveDraftGemPage,
+  mergeDbPagesWithDraftGroups,
+  setActiveDraftGemPage,
+  type DraftGemPage,
+} from '../lib/gemPages'
+import {
+  createDraftEquipPage,
+  defaultDraftEquipPages,
+  DRAFT_EQUIP_PAGE_PREFIX,
+  getActiveDraftEquipPage,
+  mergeDbEquipPagesWithDraftItems,
+  setActiveDraftEquipPage,
+  upsertDraftItemOnPage,
+  type DraftEquipPage,
+} from '../lib/equipPages'
+import { nextTempPageName } from '../lib/pageNames'
+import { useI18n } from '../hooks/useI18n'
 import { GemsTab } from '../components/GemsTab'
 import { EquipsTab } from '../components/EquipsTab'
 import { TreeTab } from '../components/TreeTab'
@@ -25,8 +45,6 @@ import { PobImportStrip } from '../components/PobImportStrip'
 type TabId = 'gems' | 'equips' | 'tree'
 type EditorKind = 'equip' | 'gem' | 'tree'
 
-const BUDGET_TIERS: BudgetTier[] = ['early', 'medium', 'high']
-
 type BuildPanelDockSide = 'left' | 'right'
 
 function BuildPanelCollapsed({ dockSide }: { dockSide: BuildPanelDockSide }) {
@@ -41,19 +59,19 @@ function BuildPanelCollapsed({ dockSide }: { dockSide: BuildPanelDockSide }) {
   )
 }
 
-function emptyDraft(name: string, budgetTier: BudgetTier = 'early') {
+function emptyDraft(name: string) {
   return {
     buildId: null as string | null,
     selectedId: NEW_BUILD_ID,
     name,
-    budgetTier,
-    gemGroups: [] as BuildGemGroup[],
-    items: [] as BuildItem[],
+    gemPages: defaultDraftGemPages(),
+    equipPages: defaultDraftEquipPages(),
     trees: [] as PassiveTreeSlot[],
   }
 }
 
 export function BuildPanelWindow() {
+  const { t } = useI18n()
   const [collapsed, setCollapsed] = useState(true)
   const [maximized, setMaximized] = useState(false)
   const [dockSide, setDockSide] = useState<BuildPanelDockSide>('right')
@@ -62,9 +80,8 @@ export function BuildPanelWindow() {
   const [draftBuildId, setDraftBuildId] = useState<string | null>(null)
   const [selectedId, setSelectedId] = useState(NEW_BUILD_ID)
   const [draftName, setDraftName] = useState('New Build')
-  const [budgetTier, setBudgetTier] = useState<BudgetTier>('early')
-  const [gemGroups, setGemGroups] = useState<BuildGemGroup[]>([])
-  const [items, setItems] = useState<BuildItem[]>([])
+  const [gemPages, setGemPages] = useState<DraftGemPage[]>(defaultDraftGemPages())
+  const [equipPages, setEquipPages] = useState<DraftEquipPage[]>(defaultDraftEquipPages())
   const [trees, setTrees] = useState<PassiveTreeSlot[]>([])
   const [isDirty, setIsDirty] = useState(false)
   const [isEditingName, setIsEditingName] = useState(false)
@@ -75,6 +92,11 @@ export function BuildPanelWindow() {
   const [editingGroupId, setEditingGroupId] = useState<string | null>(null)
   const [characterLevel, setCharacterLevel] = useState<number | null>(null)
   const [gameCharacterName, setGameCharacterName] = useState('')
+  const [autoEditGemPageId, setAutoEditGemPageId] = useState<string | null>(null)
+  const [autoEditEquipPageId, setAutoEditEquipPageId] = useState<string | null>(null)
+
+  const clearAutoEditGemPage = useCallback(() => setAutoEditGemPageId(null), [])
+  const clearAutoEditEquipPage = useCallback(() => setAutoEditEquipPageId(null), [])
 
   const draftProfile = useMemo<BuildProfile>(
     () => ({
@@ -82,36 +104,42 @@ export function BuildPanelWindow() {
       name: draftName,
       className: null,
       notes: null,
-      activeBudgetTier: budgetTier,
+      activeBudgetTier: 'early' as BudgetTier,
       isActive: true,
       gameCharacterName: gameCharacterName || null,
       trackedCharacterLevel: characterLevel,
       createdAt: '',
       updatedAt: '',
     }),
-    [draftBuildId, draftName, budgetTier, gameCharacterName, characterLevel],
+    [draftBuildId, draftName, gameCharacterName, characterLevel],
   )
 
-  const visibleItems = useMemo(() => itemsForBudget(items, budgetTier), [items, budgetTier])
+  const activeGemPage = useMemo(() => getActiveDraftGemPage(gemPages), [gemPages])
+  const activeGemGroups = activeGemPage.groups
+  const activeEquipPage = useMemo(() => getActiveDraftEquipPage(equipPages), [equipPages])
+  const visibleItems = activeEquipPage.items
 
   const loadDraftFromBuild = useCallback(async (buildId: string) => {
     const profile = (await window.haga.getBuildProfiles()).find((entry) => entry.id === buildId)
     if (!profile) return
 
-    const itemLists = await Promise.all(BUDGET_TIERS.map((tier) => window.haga.getBuildItems(buildId, tier)))
-    const [groups, treeList] = await Promise.all([
-      window.haga.getBuildGemGroups(buildId),
+    const [pages, equipPageList, treeList] = await Promise.all([
+      window.haga.getBuildGemPages(buildId),
+      window.haga.getBuildEquipPages(buildId),
       window.haga.getPassiveTrees(buildId),
     ])
+    const groupsLists = await Promise.all(pages.map((page) => window.haga.getBuildGemGroups(buildId, page.id)))
+    const itemLists = await Promise.all(equipPageList.map((page) => window.haga.getBuildItems(buildId, page.id)))
+    const groupsByPageId = new Map(pages.map((page, index) => [page.id, groupsLists[index]]))
+    const itemsByPageId = new Map(equipPageList.map((page, index) => [page.id, itemLists[index]]))
 
     setDraftBuildId(buildId)
     setSelectedId(buildId)
     setDraftName(profile.name)
-    setBudgetTier(profile.activeBudgetTier)
     setGameCharacterName(profile.gameCharacterName ?? '')
     setCharacterLevel(profile.trackedCharacterLevel)
-    setGemGroups(groups)
-    setItems(itemLists.flat())
+    setGemPages(mergeDbPagesWithDraftGroups(pages, groupsByPageId))
+    setEquipPages(mergeDbEquipPagesWithDraftItems(equipPageList, itemsByPageId))
     setTrees(treeList)
     setIsDirty(false)
     setIsEditingName(false)
@@ -130,9 +158,8 @@ export function BuildPanelWindow() {
       setDraftBuildId(blank.buildId)
       setSelectedId(blank.selectedId)
       setDraftName(blank.name)
-      setBudgetTier(blank.budgetTier)
-      setGemGroups(blank.gemGroups)
-      setItems(blank.items)
+      setGemPages(blank.gemPages)
+      setEquipPages(blank.equipPages)
       setTrees(blank.trees)
       setIsDirty(false)
       return
@@ -232,9 +259,8 @@ export function BuildPanelWindow() {
     setDraftBuildId(blank.buildId)
     setSelectedId(NEW_BUILD_ID)
     setDraftName(blank.name)
-    setBudgetTier(blank.budgetTier)
-    setGemGroups(blank.gemGroups)
-    setItems(blank.items)
+    setGemPages(blank.gemPages)
+    setEquipPages(blank.equipPages)
     setTrees(blank.trees)
     setIsDirty(true)
     setIsEditingName(true)
@@ -248,9 +274,8 @@ export function BuildPanelWindow() {
         toPersistPayload({
           buildId: draftBuildId,
           name: draftName,
-          budgetTier,
-          gemGroups,
-          items,
+          gemPages,
+          equipPages,
           trees,
         }),
       )
@@ -262,43 +287,214 @@ export function BuildPanelWindow() {
     }
   }
 
-  const onBudgetChange = (tier: BudgetTier) => {
-    setBudgetTier(tier)
-    markDirty()
-  }
-
   const onDraftNameChange = (name: string) => {
     setDraftName(name)
     markDirty()
   }
 
+  const updateEquipPageItems = (pageId: string, updater: (items: BuildItem[]) => BuildItem[]) => {
+    setEquipPages((prev) =>
+      prev.map((page) => (page.id === pageId ? { ...page, items: updater(page.items) } : page)),
+    )
+  }
+
   const saveDraftItem = async (input: SaveBuildItemInput) => {
-    const preview = await window.haga.previewBuildItem(input)
-    setItems((prev) => upsertDraftItem(prev, preview))
-    markDirty()
-    closeEditor()
+    const pageId = activeEquipPage.id
+    const withPage: SaveBuildItemInput = { ...input, pageId }
+    const isPersistedPage = Boolean(draftBuildId && !pageId.startsWith(DRAFT_EQUIP_PAGE_PREFIX))
+
+    try {
+      if (isPersistedPage && draftBuildId) {
+        const saved = await window.haga.saveBuildItem(draftBuildId, withPage)
+        updateEquipPageItems(pageId, (items) => upsertDraftItemOnPage(items, saved))
+      } else {
+        const preview = await window.haga.previewBuildItem(withPage)
+        preview.pageId = pageId
+        updateEquipPageItems(pageId, (items) => upsertDraftItemOnPage(items, preview))
+      }
+
+      markDirty()
+      closeEditor()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : 'Failed to save item.')
+    }
+  }
+
+  const updateGemPageGroups = (pageId: string, updater: (groups: BuildGemGroup[]) => BuildGemGroup[]) => {
+    setGemPages((prev) =>
+      prev.map((page) => (page.id === pageId ? { ...page, groups: updater(page.groups) } : page)),
+    )
   }
 
   const saveDraftGemGroup = async (input: SaveGemGroupInput) => {
-    const sortOrder = editingGroup
-      ? gemGroups.findIndex((group) => group.id === editingGroup.id)
-      : gemGroups.length
-    const preview = await window.haga.previewBuildGemGroup(input, Math.max(sortOrder, 0))
+    const pageId = activeGemPage.id
+    const withPage: SaveGemGroupInput = { ...input, pageId }
+    const isPersistedPage = Boolean(draftBuildId && !pageId.startsWith(DRAFT_GEM_PAGE_PREFIX))
 
-    setGemGroups((prev) => {
-      if (input.id) {
-        return prev.map((group) => (group.id === input.id ? preview : group))
+    try {
+      if (isPersistedPage && draftBuildId) {
+        const saved = await window.haga.saveBuildGemGroup(draftBuildId, withPage)
+        updateGemPageGroups(pageId, (groups) => {
+          if (input.id) {
+            return groups.map((group) => (group.id === input.id ? saved : group))
+          }
+          return [...groups, saved]
+        })
+      } else {
+        const sortOrder = editingGroup
+          ? activeGemGroups.findIndex((group) => group.id === editingGroup.id)
+          : activeGemGroups.length
+        const preview = await window.haga.previewBuildGemGroup(withPage, Math.max(sortOrder, 0))
+        preview.pageId = pageId
+
+        updateGemPageGroups(pageId, (groups) => {
+          if (input.id) {
+            return groups.map((group) => (group.id === input.id ? preview : group))
+          }
+          return [...groups, preview]
+        })
       }
-      return [...prev, preview]
-    })
-    markDirty()
-    closeEditor()
+
+      markDirty()
+      closeEditor()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : t.build.gemEditor.saveFailed)
+    }
   }
 
-  const deleteGemGroup = (groupId: string) => {
-    if (!confirm('Delete this gem group?')) return
-    setGemGroups((prev) => prev.filter((group) => group.id !== groupId))
-    markDirty()
+  const deleteGemGroup = async (groupId: string) => {
+    if (!confirm(t.build.deleteGemGroup)) return
+    try {
+      if (draftBuildId && !activeGemPage.id.startsWith(DRAFT_GEM_PAGE_PREFIX)) {
+        await window.haga.deleteBuildGemGroup(groupId)
+      }
+      updateGemPageGroups(activeGemPage.id, (groups) => groups.filter((group) => group.id !== groupId))
+      markDirty()
+    } catch (err) {
+      alert(err instanceof Error ? err.message : t.build.gemEditor.saveFailed)
+    }
+  }
+
+  const selectGemPage = async (pageId: string) => {
+    setGemPages((prev) => setActiveDraftGemPage(prev, pageId))
+    if (draftBuildId) {
+      await window.haga.setActiveGemPage(draftBuildId, pageId)
+    }
+  }
+
+  const addGemPage = async () => {
+    const title = nextTempPageName(gemPages.map((p) => p.title))
+
+    if (draftBuildId) {
+      const page = await window.haga.createBuildGemPage(draftBuildId, title)
+      const groups = await window.haga.getBuildGemGroups(draftBuildId, page.id)
+      setGemPages((prev) => [
+        ...prev.map((p) => ({ ...p, isActive: false })),
+        { id: page.id, title: page.title, sortOrder: page.sortOrder, isActive: true, groups },
+      ])
+      setAutoEditGemPageId(page.id)
+    } else {
+      const page = createDraftGemPage(title, gemPages.length, true)
+      setGemPages((prev) => [...prev.map((p) => ({ ...p, isActive: false })), page])
+      setAutoEditGemPageId(page.id)
+      markDirty()
+    }
+  }
+
+  const renameGemPage = async (pageId: string, title: string) => {
+    const trimmed = title.trim()
+    if (!trimmed) return
+
+    const page = gemPages.find((p) => p.id === pageId)
+    if (!page || page.title === trimmed) return
+
+    if (draftBuildId && !pageId.startsWith(DRAFT_GEM_PAGE_PREFIX)) {
+      const updated = await window.haga.renameBuildGemPage(pageId, trimmed)
+      setGemPages((prev) => prev.map((p) => (p.id === pageId ? { ...p, title: updated.title } : p)))
+    } else {
+      setGemPages((prev) => prev.map((p) => (p.id === pageId ? { ...p, title: trimmed } : p)))
+      markDirty()
+    }
+  }
+
+  const deleteGemPage = async (pageId: string) => {
+    if (draftBuildId && !pageId.startsWith(DRAFT_GEM_PAGE_PREFIX)) {
+      await window.haga.deleteBuildGemPage(pageId)
+      const pages = await window.haga.getBuildGemPages(draftBuildId)
+      const groupsLists = await Promise.all(pages.map((p) => window.haga.getBuildGemGroups(draftBuildId, p.id)))
+      const groupsByPageId = new Map(pages.map((p, index) => [p.id, groupsLists[index]]))
+      setGemPages(mergeDbPagesWithDraftGroups(pages, groupsByPageId))
+    } else {
+      setGemPages((prev) => {
+        const next = prev.filter((p) => p.id !== pageId)
+        if (!next.some((p) => p.isActive) && next.length > 0) {
+          next[0].isActive = true
+        }
+        return next
+      })
+      markDirty()
+    }
+  }
+
+  const selectEquipPage = async (pageId: string) => {
+    setEquipPages((prev) => setActiveDraftEquipPage(prev, pageId))
+    if (draftBuildId && !pageId.startsWith(DRAFT_EQUIP_PAGE_PREFIX)) {
+      await window.haga.setActiveEquipPage(draftBuildId, pageId)
+    }
+  }
+
+  const addEquipPage = async () => {
+    const title = nextTempPageName(equipPages.map((p) => p.title))
+
+    if (draftBuildId) {
+      const page = await window.haga.createBuildEquipPage(draftBuildId, title)
+      const items = await window.haga.getBuildItems(draftBuildId, page.id)
+      setEquipPages((prev) => [
+        ...prev.map((p) => ({ ...p, isActive: false })),
+        { id: page.id, title: page.title, sortOrder: page.sortOrder, isActive: true, items },
+      ])
+      setAutoEditEquipPageId(page.id)
+    } else {
+      const page = createDraftEquipPage(title, equipPages.length, true)
+      setEquipPages((prev) => [...prev.map((p) => ({ ...p, isActive: false })), page])
+      setAutoEditEquipPageId(page.id)
+      markDirty()
+    }
+  }
+
+  const renameEquipPage = async (pageId: string, title: string) => {
+    const trimmed = title.trim()
+    if (!trimmed) return
+
+    const page = equipPages.find((p) => p.id === pageId)
+    if (!page || page.title === trimmed) return
+
+    if (draftBuildId && !pageId.startsWith(DRAFT_EQUIP_PAGE_PREFIX)) {
+      const updated = await window.haga.renameBuildEquipPage(pageId, trimmed)
+      setEquipPages((prev) => prev.map((p) => (p.id === pageId ? { ...p, title: updated.title } : p)))
+    } else {
+      setEquipPages((prev) => prev.map((p) => (p.id === pageId ? { ...p, title: trimmed } : p)))
+      markDirty()
+    }
+  }
+
+  const deleteEquipPage = async (pageId: string) => {
+    if (draftBuildId && !pageId.startsWith(DRAFT_EQUIP_PAGE_PREFIX)) {
+      await window.haga.deleteBuildEquipPage(pageId)
+      const pages = await window.haga.getBuildEquipPages(draftBuildId)
+      const itemLists = await Promise.all(pages.map((p) => window.haga.getBuildItems(draftBuildId, p.id)))
+      const itemsByPageId = new Map(pages.map((p, index) => [p.id, itemLists[index]]))
+      setEquipPages(mergeDbEquipPagesWithDraftItems(pages, itemsByPageId))
+    } else {
+      setEquipPages((prev) => {
+        const next = prev.filter((p) => p.id !== pageId)
+        if (!next.some((p) => p.isActive) && next.length > 0) {
+          next[0].isActive = true
+        }
+        return next
+      })
+      markDirty()
+    }
   }
 
   const saveDraftTrees = (nextTrees: PassiveTreeSlot[]) => {
@@ -308,22 +504,25 @@ export function BuildPanelWindow() {
   }
 
   const importPoBToDraft = async (code: string) => {
-    console.log('[pob-import] UI: import to draft iniciado', { budgetTier })
-    const parsed = await window.haga.parsePoBImport(code, budgetTier)
+    console.log('[pob-import] UI: import to draft iniciado')
+    const parsed = await window.haga.parsePoBImport(code)
+    const equipItemCount = parsed.equipPages.reduce((n, p) => n + p.items.length, 0)
     console.log('[pob-import] UI: parse retornou', {
-      items: parsed.items.length,
-      gemGroups: parsed.gemGroups.length,
+      equipPages: parsed.equipPages.length,
+      equipItems: equipItemCount,
+      gemPages: parsed.gemPages.length,
     })
-    const merged = await applyPoBImportToDraft(items, parsed.items, parsed.gemGroups)
-    setItems(merged.items)
-    setGemGroups(merged.gemGroups)
+    const merged = await applyPoBImportToDraft(parsed.equipPages, parsed.gemPages)
+    setEquipPages(merged.equipPages)
+    setGemPages(merged.gemPages)
     markDirty()
-    if (parsed.items.length > 0) {
+    if (equipItemCount > 0) {
       setTab('equips')
     }
     console.log('[pob-import] UI: draft marcado como dirty — lembre de Save build', {
-      itemsImportados: parsed.items.length,
-      aba: parsed.items.length > 0 ? 'equips' : tab,
+      paginasEquip: parsed.equipPages.length,
+      itensImportados: equipItemCount,
+      aba: equipItemCount > 0 ? 'equips' : tab,
     })
   }
 
@@ -331,6 +530,23 @@ export function BuildPanelWindow() {
     setEditingSlotId(slotId)
     setEditingItem(item)
     setEditorKind('equip')
+  }
+
+  const addGemGroup = () => {
+    const pageId = activeGemPage.id
+    const label = nextTempPageName(
+      activeGemGroups.map((group) => group.notes?.trim() || group.mainGem?.gemName || '').filter(Boolean),
+    )
+    const group = createEmptyDraftGemGroup(pageId, activeGemGroups.length, label)
+    updateGemPageGroups(pageId, (groups) => [...groups, group])
+    markDirty()
+  }
+
+  const renameGemGroupLabel = (groupId: string, label: string) => {
+    updateGemPageGroups(activeGemPage.id, (groups) =>
+      groups.map((group) => (group.id === groupId ? { ...group, notes: label } : group)),
+    )
+    markDirty()
   }
 
   const openGemGroupEditor = (groupId?: string) => {
@@ -342,7 +558,9 @@ export function BuildPanelWindow() {
     setEditorKind('tree')
   }
 
-  const editingGroup = editingGroupId ? gemGroups.find((group) => group.id === editingGroupId) ?? null : null
+  const editingGroup = editingGroupId
+    ? activeGemGroups.find((group) => group.id === editingGroupId) ?? null
+    : null
 
   const selectorProfiles = useMemo(() => {
     const options = profiles.map((profile) => ({ id: profile.id, name: profile.name }))
@@ -412,23 +630,64 @@ export function BuildPanelWindow() {
         <div className="flex-1 overflow-y-auto p-4">
           {tab === 'gems' && (
             <GemsTab
-              groups={gemGroups}
+              pages={gemPages}
+              groups={activeGemGroups}
               characterLevel={characterLevel}
-              onAddGroup={() => openGemGroupEditor()}
+              autoEditPageId={autoEditGemPageId}
+              onAutoEditPageDone={clearAutoEditGemPage}
+              onSelectPage={(pageId) => void selectGemPage(pageId)}
+              onAddPage={() => void addGemPage()}
+              onRenamePage={(pageId, title) => void renameGemPage(pageId, title)}
+              onDeletePage={(pageId) => void deleteGemPage(pageId)}
+              onAddGroup={addGemGroup}
+              onRenameGroupLabel={renameGemGroupLabel}
               onEditGroup={openGemGroupEditor}
-              onDeleteGroup={deleteGemGroup}
+              onDeleteGroup={(groupId) => void deleteGemGroup(groupId)}
             />
           )}
           {tab === 'equips' && (
             <EquipsTab
+              pages={equipPages}
               items={visibleItems}
-              budgetTier={budgetTier}
-              onBudgetChange={onBudgetChange}
+              autoEditPageId={autoEditEquipPageId}
+              onAutoEditPageDone={clearAutoEditEquipPage}
+              onSelectPage={(pageId) => void selectEquipPage(pageId)}
+              onAddPage={() => void addEquipPage()}
+              onRenamePage={(pageId, title) => void renameEquipPage(pageId, title)}
+              onDeletePage={(pageId) => void deleteEquipPage(pageId)}
               onEditSlot={openItemEditor}
             />
           )}
           {tab === 'tree' && <TreeTab trees={trees} onEdit={openTreeEditor} />}
         </div>
+
+        {editorKind === 'equip' && (
+          <EquipEditorOverlay
+            build={draftProfile}
+            pageId={activeEquipPage.id}
+            editingSlotId={editingSlotId}
+            editingItem={editingItem}
+            onClose={closeEditor}
+            onSaveItem={saveDraftItem}
+          />
+        )}
+        {editorKind === 'gem' && (
+          <GemGroupEditorOverlay
+            build={draftProfile}
+            editingGroup={editingGroup}
+            onClose={closeEditor}
+            onSaveGroup={saveDraftGemGroup}
+          />
+        )}
+        {editorKind === 'tree' && (
+          <TreeEditorOverlay
+            build={draftProfile}
+            draftMode
+            initialTrees={trees}
+            onSaveDraft={saveDraftTrees}
+            onClose={closeEditor}
+          />
+        )}
       </div>
 
       {dockSide === 'left' && (
@@ -436,34 +695,6 @@ export function BuildPanelWindow() {
           expanded
           dockSide={dockSide}
           onClick={() => window.haga.closeOverlay('build-panel')}
-        />
-      )}
-
-      {editorKind === 'equip' && (
-        <EquipEditorOverlay
-          build={draftProfile}
-          budgetTier={budgetTier}
-          editingSlotId={editingSlotId}
-          editingItem={editingItem}
-          onClose={closeEditor}
-          onSaveItem={saveDraftItem}
-        />
-      )}
-      {editorKind === 'gem' && (
-        <GemGroupEditorOverlay
-          build={draftProfile}
-          editingGroup={editingGroup}
-          onClose={closeEditor}
-          onSaveGroup={saveDraftGemGroup}
-        />
-      )}
-      {editorKind === 'tree' && (
-        <TreeEditorOverlay
-          build={draftProfile}
-          draftMode
-          initialTrees={trees}
-          onSaveDraft={saveDraftTrees}
-          onClose={closeEditor}
         />
       )}
     </div>

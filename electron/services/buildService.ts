@@ -16,14 +16,23 @@ import {
 import { isUnknownGemId, parseUnknownGemId } from '../../src/lib/unknownGem'
 import type {
   BudgetTier,
+  BuildEquipPage,
   BuildGemGroup,
   BuildGemLink,
+  BuildGemPage,
   BuildItem,
   BuildProfile,
   PassiveTreeSlot,
   RecommendedSupportGem,
 } from '../../src/types/build'
-import type { PersistBuildDraftInput, SaveBuildItemInput, SaveGemGroupInput, SaveTreeSlotInput } from '../../src/types/ipc'
+import type {
+  PersistBuildDraftInput,
+  SaveBuildItemInput,
+  SaveEquipPageInput,
+  SaveGemGroupInput,
+  SaveGemPageInput,
+  SaveTreeSlotInput,
+} from '../../src/types/ipc'
 import { importCompletedObjectiveIds } from './objectiveService'
 
 function refTables() {
@@ -94,6 +103,9 @@ export function createBuild(name: string, className?: string): BuildProfile {
     VALUES (?, ?, ?, '', 'early', 1, ?, ?)
   `).run(id, name, className ?? null, now, now)
 
+  ensureDefaultGemPage(id)
+  ensureDefaultEquipPage(id)
+
   const row = db.prepare('SELECT * FROM build_profiles WHERE id = ?').get(id) as BuildRow
   return mapProfile(row)
 }
@@ -137,7 +149,8 @@ export function previewBuildItem(input: SaveBuildItemInput, buildId = 'draft'): 
   return {
     id,
     buildId,
-    budgetTier: input.budgetTier,
+    budgetTier: 'early',
+    pageId: input.pageId ?? 'draft-page',
     rarity: input.rarity,
     uniqueId: input.uniqueId ?? null,
     uniqueName: unique?.name ?? null,
@@ -178,9 +191,313 @@ export function previewBuildGemGroup(input: SaveGemGroupInput, sortOrder = 0, bu
 
   return mapGemGroup(
     ref,
-    { id: groupId, build_id: buildId, sort_order: sortOrder, notes: input.notes ?? null },
+    {
+      id: groupId,
+      build_id: buildId,
+      page_id: input.pageId ?? 'draft-page',
+      sort_order: sortOrder,
+      notes: input.notes ?? null,
+    },
     gemRows,
   )
+}
+
+type GemPageRow = {
+  id: string
+  build_id: string
+  title: string
+  sort_order: number
+  is_active: number
+}
+
+function mapGemPage(row: GemPageRow): BuildGemPage {
+  return {
+    id: row.id,
+    buildId: row.build_id,
+    title: row.title,
+    sortOrder: row.sort_order,
+    isActive: row.is_active === 1,
+  }
+}
+
+export function ensureDefaultGemPage(buildId: string): string {
+  const db = getUserDb()
+  const existing = db
+    .prepare('SELECT id FROM build_gem_pages WHERE build_id = ? ORDER BY sort_order LIMIT 1')
+    .get(buildId) as { id: string } | undefined
+  if (existing) return existing.id
+
+  const pageId = uuidv4()
+  db.prepare(
+    'INSERT INTO build_gem_pages (id, build_id, title, sort_order, is_active) VALUES (?, ?, ?, 0, 1)',
+  ).run(pageId, buildId, 'Default')
+  return pageId
+}
+
+export function getBuildGemPages(buildId: string): BuildGemPage[] {
+  ensureDefaultGemPage(buildId)
+  const db = getUserDb()
+  const rows = db
+    .prepare('SELECT * FROM build_gem_pages WHERE build_id = ? ORDER BY sort_order, title')
+    .all(buildId) as GemPageRow[]
+  return rows.map(mapGemPage)
+}
+
+export function getActiveGemPageId(buildId: string): string {
+  const db = getUserDb()
+  const active = db
+    .prepare('SELECT id FROM build_gem_pages WHERE build_id = ? AND is_active = 1 LIMIT 1')
+    .get(buildId) as { id: string } | undefined
+  if (active) return active.id
+  return ensureDefaultGemPage(buildId)
+}
+
+export function setActiveGemPage(buildId: string, pageId: string): BuildGemPage[] {
+  const db = getUserDb()
+  const page = db
+    .prepare('SELECT id FROM build_gem_pages WHERE id = ? AND build_id = ?')
+    .get(pageId, buildId) as { id: string } | undefined
+  if (!page) throw new Error('Gem page not found.')
+
+  db.prepare('UPDATE build_gem_pages SET is_active = 0 WHERE build_id = ?').run(buildId)
+  db.prepare('UPDATE build_gem_pages SET is_active = 1 WHERE id = ?').run(pageId)
+  return getBuildGemPages(buildId)
+}
+
+export function createBuildGemPage(buildId: string, title: string): BuildGemPage {
+  const db = getUserDb()
+  const trimmed = title.trim() || 'New page'
+  const sortOrder = (
+    db.prepare('SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM build_gem_pages WHERE build_id = ?').get(buildId) as {
+      next: number
+    }
+  ).next
+  const pageId = uuidv4()
+  db.prepare('UPDATE build_gem_pages SET is_active = 0 WHERE build_id = ?').run(buildId)
+  db.prepare(
+    'INSERT INTO build_gem_pages (id, build_id, title, sort_order, is_active) VALUES (?, ?, ?, ?, 1)',
+  ).run(pageId, buildId, trimmed, sortOrder)
+  return mapGemPage(
+    db.prepare('SELECT * FROM build_gem_pages WHERE id = ?').get(pageId) as GemPageRow,
+  )
+}
+
+export function renameBuildGemPage(pageId: string, title: string): BuildGemPage {
+  const trimmed = title.trim()
+  if (!trimmed) throw new Error('Page title is required.')
+  const db = getUserDb()
+  db.prepare('UPDATE build_gem_pages SET title = ? WHERE id = ?').run(trimmed, pageId)
+  const row = db.prepare('SELECT * FROM build_gem_pages WHERE id = ?').get(pageId) as GemPageRow | undefined
+  if (!row) throw new Error('Gem page not found.')
+  return mapGemPage(row)
+}
+
+export function deleteBuildGemPage(pageId: string): void {
+  const db = getUserDb()
+  const row = db.prepare('SELECT build_id FROM build_gem_pages WHERE id = ?').get(pageId) as
+    | { build_id: string }
+    | undefined
+  if (!row) throw new Error('Gem page not found.')
+
+  const count = (
+    db.prepare('SELECT COUNT(*) as c FROM build_gem_pages WHERE build_id = ?').get(row.build_id) as { c: number }
+  ).c
+  if (count <= 1) throw new Error('Cannot delete the only gem page.')
+
+  const wasActive = (
+    db.prepare('SELECT is_active FROM build_gem_pages WHERE id = ?').get(pageId) as { is_active: number }
+  ).is_active
+
+  db.prepare('DELETE FROM build_gem_pages WHERE id = ?').run(pageId)
+
+  if (wasActive === 1) {
+    const next = db
+      .prepare('SELECT id FROM build_gem_pages WHERE build_id = ? ORDER BY sort_order LIMIT 1')
+      .get(row.build_id) as { id: string } | undefined
+    if (next) {
+      db.prepare('UPDATE build_gem_pages SET is_active = 1 WHERE id = ?').run(next.id)
+    }
+  }
+}
+
+export function clearBuildGemPages(buildId: string): void {
+  getUserDb().prepare('DELETE FROM build_gem_pages WHERE build_id = ?').run(buildId)
+}
+
+export function saveBuildGemPagesPoB(buildId: string, pages: SaveGemPageInput[]): void {
+  const db = getUserDb()
+  db.prepare('DELETE FROM build_gem_pages WHERE build_id = ?').run(buildId)
+
+  let activeAssigned = false
+  pages.forEach((page, pageIndex) => {
+    const pageId = uuidv4()
+    const isActive = page.isActive && !activeAssigned
+    if (isActive) activeAssigned = true
+    db.prepare(
+      'INSERT INTO build_gem_pages (id, build_id, title, sort_order, is_active) VALUES (?, ?, ?, ?, ?)',
+    ).run(pageId, buildId, page.title.trim() || `Set ${pageIndex + 1}`, page.sortOrder ?? pageIndex, isActive ? 1 : 0)
+
+    page.gemGroups.forEach((group, sortOrder) => {
+      saveBuildGemGroupPoB(buildId, pageId, {
+        sortOrder,
+        mainGemId: group.mainGemId,
+        linkedGemIds: group.linkedGems.map((g) => g.gemId).slice(0, 5),
+        notes: group.notes ?? null,
+      })
+    })
+  })
+
+  if (!activeAssigned && pages.length > 0) {
+    const first = db
+      .prepare('SELECT id FROM build_gem_pages WHERE build_id = ? ORDER BY sort_order LIMIT 1')
+      .get(buildId) as { id: string }
+    db.prepare('UPDATE build_gem_pages SET is_active = 1 WHERE id = ?').run(first.id)
+  }
+}
+
+type EquipPageRow = {
+  id: string
+  build_id: string
+  title: string
+  sort_order: number
+  is_active: number
+}
+
+function mapEquipPage(row: EquipPageRow): BuildEquipPage {
+  return {
+    id: row.id,
+    buildId: row.build_id,
+    title: row.title,
+    sortOrder: row.sort_order,
+    isActive: row.is_active === 1,
+  }
+}
+
+export function ensureDefaultEquipPage(buildId: string): string {
+  const db = getUserDb()
+  const existing = db
+    .prepare('SELECT id FROM build_equip_pages WHERE build_id = ? ORDER BY sort_order LIMIT 1')
+    .get(buildId) as { id: string } | undefined
+  if (existing) return existing.id
+
+  const pageId = uuidv4()
+  db.prepare(
+    'INSERT INTO build_equip_pages (id, build_id, title, sort_order, is_active) VALUES (?, ?, ?, 0, 1)',
+  ).run(pageId, buildId, 'Default')
+  return pageId
+}
+
+export function getBuildEquipPages(buildId: string): BuildEquipPage[] {
+  ensureDefaultEquipPage(buildId)
+  const db = getUserDb()
+  const rows = db
+    .prepare('SELECT * FROM build_equip_pages WHERE build_id = ? ORDER BY sort_order, title')
+    .all(buildId) as EquipPageRow[]
+  return rows.map(mapEquipPage)
+}
+
+export function getActiveEquipPageId(buildId: string): string {
+  const db = getUserDb()
+  const active = db
+    .prepare('SELECT id FROM build_equip_pages WHERE build_id = ? AND is_active = 1 LIMIT 1')
+    .get(buildId) as { id: string } | undefined
+  if (active) return active.id
+  return ensureDefaultEquipPage(buildId)
+}
+
+export function setActiveEquipPage(buildId: string, pageId: string): BuildEquipPage[] {
+  const db = getUserDb()
+  const page = db
+    .prepare('SELECT id FROM build_equip_pages WHERE id = ? AND build_id = ?')
+    .get(pageId, buildId) as { id: string } | undefined
+  if (!page) throw new Error('Equip page not found.')
+
+  db.prepare('UPDATE build_equip_pages SET is_active = 0 WHERE build_id = ?').run(buildId)
+  db.prepare('UPDATE build_equip_pages SET is_active = 1 WHERE id = ?').run(pageId)
+  return getBuildEquipPages(buildId)
+}
+
+export function createBuildEquipPage(buildId: string, title: string): BuildEquipPage {
+  const db = getUserDb()
+  const trimmed = title.trim() || 'New page'
+  const sortOrder = (
+    db.prepare('SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM build_equip_pages WHERE build_id = ?').get(
+      buildId,
+    ) as { next: number }
+  ).next
+  const pageId = uuidv4()
+  db.prepare('UPDATE build_equip_pages SET is_active = 0 WHERE build_id = ?').run(buildId)
+  db.prepare(
+    'INSERT INTO build_equip_pages (id, build_id, title, sort_order, is_active) VALUES (?, ?, ?, ?, 1)',
+  ).run(pageId, buildId, trimmed, sortOrder)
+  return mapEquipPage(db.prepare('SELECT * FROM build_equip_pages WHERE id = ?').get(pageId) as EquipPageRow)
+}
+
+export function renameBuildEquipPage(pageId: string, title: string): BuildEquipPage {
+  const trimmed = title.trim()
+  if (!trimmed) throw new Error('Page title is required.')
+  const db = getUserDb()
+  db.prepare('UPDATE build_equip_pages SET title = ? WHERE id = ?').run(trimmed, pageId)
+  const row = db.prepare('SELECT * FROM build_equip_pages WHERE id = ?').get(pageId) as EquipPageRow | undefined
+  if (!row) throw new Error('Equip page not found.')
+  return mapEquipPage(row)
+}
+
+export function deleteBuildEquipPage(pageId: string): void {
+  const db = getUserDb()
+  const row = db.prepare('SELECT build_id FROM build_equip_pages WHERE id = ?').get(pageId) as
+    | { build_id: string }
+    | undefined
+  if (!row) throw new Error('Equip page not found.')
+
+  const count = (
+    db.prepare('SELECT COUNT(*) as c FROM build_equip_pages WHERE build_id = ?').get(row.build_id) as { c: number }
+  ).c
+  if (count <= 1) throw new Error('Cannot delete the only equip page.')
+
+  const wasActive = (
+    db.prepare('SELECT is_active FROM build_equip_pages WHERE id = ?').get(pageId) as { is_active: number }
+  ).is_active
+
+  db.prepare('DELETE FROM build_equip_pages WHERE id = ?').run(pageId)
+
+  if (wasActive === 1) {
+    const next = db
+      .prepare('SELECT id FROM build_equip_pages WHERE build_id = ? ORDER BY sort_order LIMIT 1')
+      .get(row.build_id) as { id: string } | undefined
+    if (next) db.prepare('UPDATE build_equip_pages SET is_active = 1 WHERE id = ?').run(next.id)
+  }
+}
+
+export function clearBuildEquipPages(buildId: string): void {
+  getUserDb().prepare('DELETE FROM build_equip_pages WHERE build_id = ?').run(buildId)
+}
+
+export function saveBuildEquipPagesPoB(buildId: string, pages: SaveEquipPageInput[]): void {
+  const db = getUserDb()
+  db.prepare('DELETE FROM build_equip_pages WHERE build_id = ?').run(buildId)
+  db.prepare('DELETE FROM build_items WHERE build_id = ?').run(buildId)
+
+  let activeAssigned = false
+  pages.forEach((page, pageIndex) => {
+    const pageId = uuidv4()
+    const isActive = page.isActive && !activeAssigned
+    if (isActive) activeAssigned = true
+    db.prepare(
+      'INSERT INTO build_equip_pages (id, build_id, title, sort_order, is_active) VALUES (?, ?, ?, ?, ?)',
+    ).run(pageId, buildId, page.title.trim() || `Set ${pageIndex + 1}`, page.sortOrder ?? pageIndex, isActive ? 1 : 0)
+
+    for (const item of page.items) {
+      saveBuildItem(buildId, { ...item, pageId })
+    }
+  })
+
+  if (!activeAssigned && pages.length > 0) {
+    const first = db
+      .prepare('SELECT id FROM build_equip_pages WHERE build_id = ? ORDER BY sort_order LIMIT 1')
+      .get(buildId) as { id: string }
+    db.prepare('UPDATE build_equip_pages SET is_active = 1 WHERE id = ?').run(first.id)
+  }
 }
 
 export function persistBuildDraft(input: PersistBuildDraftInput): BuildProfile {
@@ -198,25 +515,22 @@ export function persistBuildDraft(input: PersistBuildDraftInput): BuildProfile {
     setActiveBuild(buildId)
   }
 
-  db.prepare('UPDATE build_profiles SET active_budget_tier = ?, updated_at = ? WHERE id = ?').run(
-    input.budgetTier,
-    now,
-    buildId,
-  )
+  db.prepare('UPDATE build_profiles SET updated_at = ? WHERE id = ?').run(now, buildId)
 
-  clearBuildGemGroups(buildId)
-  input.gemGroups.forEach((group, sortOrder) => {
-    saveBuildGemGroupPoB(buildId!, {
-      sortOrder,
-      mainGemId: group.mainGemId,
-      linkedGemIds: group.linkedGems.map((gem) => gem.gemId).slice(0, 5),
-      notes: group.notes ?? null,
-    })
-  })
+  if (input.gemPages.length > 0) {
+    clearBuildGemPages(buildId)
+    saveBuildGemPagesPoB(buildId!, input.gemPages)
+  } else {
+    clearBuildGemPages(buildId)
+    ensureDefaultGemPage(buildId!)
+  }
 
-  db.prepare('DELETE FROM build_items WHERE build_id = ?').run(buildId)
-  for (const item of input.items) {
-    saveBuildItem(buildId, item)
+  if (input.equipPages.length > 0) {
+    clearBuildEquipPages(buildId)
+    saveBuildEquipPagesPoB(buildId!, input.equipPages)
+  } else {
+    clearBuildEquipPages(buildId)
+    ensureDefaultEquipPage(buildId!)
   }
 
   const draftSlotIndexes = new Set(input.trees.map((tree) => tree.slotIndex))
@@ -358,7 +672,7 @@ function resolveGemLink(
 
 function mapGemGroup(
   ref: ReturnType<typeof getReferenceDb>,
-  group: { id: string; build_id: string; sort_order: number; notes: string | null },
+  group: { id: string; build_id: string; page_id: string; sort_order: number; notes: string | null },
   gemRows: Array<{ id: string; gem_id: string; link_index: number; notes: string | null }>,
 ): BuildGemGroup {
   const links = gemRows.map((row) => resolveGemLink(ref, row))
@@ -371,6 +685,7 @@ function mapGemGroup(
   return {
     id: group.id,
     buildId: group.build_id,
+    pageId: group.page_id,
     sortOrder: group.sort_order,
     notes: group.notes,
     mainGem,
@@ -379,12 +694,19 @@ function mapGemGroup(
   }
 }
 
-export function getBuildGemGroups(buildId: string): BuildGemGroup[] {
+export function getBuildGemGroups(buildId: string, pageId?: string): BuildGemGroup[] {
   const ref = getReferenceDb()
   const db = getUserDb()
+  const resolvedPageId = pageId ?? getActiveGemPageId(buildId)
   const groups = db
-    .prepare('SELECT * FROM build_gem_groups WHERE build_id = ? ORDER BY sort_order')
-    .all(buildId) as Array<{ id: string; build_id: string; sort_order: number; notes: string | null }>
+    .prepare('SELECT * FROM build_gem_groups WHERE build_id = ? AND page_id = ? ORDER BY sort_order')
+    .all(buildId, resolvedPageId) as Array<{
+    id: string
+    build_id: string
+    page_id: string
+    sort_order: number
+    notes: string | null
+  }>
 
   return groups.map((group) => {
     const gemRows = db
@@ -422,17 +744,26 @@ export function saveBuildGemGroup(buildId: string, input: SaveGemGroupInput): Bu
     : undefined
 
   const groupId = existingGroup?.id ?? uuidv4()
+  const pageId = input.pageId ?? getActiveGemPageId(buildId)
+
   const sortOrder = existingGroup
     ? ((db.prepare('SELECT sort_order FROM build_gem_groups WHERE id = ?').get(groupId) as { sort_order: number }).sort_order)
-    : ((db.prepare('SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM build_gem_groups WHERE build_id = ?').get(buildId) as { next: number }).next)
+    : ((
+        db
+          .prepare(
+            'SELECT COALESCE(MAX(sort_order), -1) + 1 as next FROM build_gem_groups WHERE build_id = ? AND page_id = ?',
+          )
+          .get(buildId, pageId) as { next: number }
+      ).next)
 
   if (existingGroup) {
     db.prepare('UPDATE build_gem_groups SET notes = ? WHERE id = ?').run(input.notes ?? null, groupId)
     db.prepare('DELETE FROM build_gems WHERE group_id = ?').run(groupId)
   } else {
-    db.prepare('INSERT INTO build_gem_groups (id, build_id, sort_order, notes) VALUES (?, ?, ?, ?)').run(
+    db.prepare('INSERT INTO build_gem_groups (id, build_id, page_id, sort_order, notes) VALUES (?, ?, ?, ?, ?)').run(
       groupId,
       buildId,
+      pageId,
       sortOrder,
       input.notes ?? null,
     )
@@ -455,26 +786,29 @@ export function saveBuildGemGroup(buildId: string, input: SaveGemGroupInput): Bu
     )
   })
 
-  return getBuildGemGroups(buildId).find((g) => g.id === groupId)!
+  return getBuildGemGroups(buildId, pageId).find((g) => g.id === groupId)!
 }
 
 export function deleteBuildGemGroup(groupId: string): void {
   getUserDb().prepare('DELETE FROM build_gem_groups WHERE id = ?').run(groupId)
 }
 
+/** @deprecated Prefer clearBuildGemPages */
 export function clearBuildGemGroups(buildId: string): void {
-  getUserDb().prepare('DELETE FROM build_gem_groups WHERE build_id = ?').run(buildId)
+  clearBuildGemPages(buildId)
 }
 
 export function saveBuildGemGroupPoB(
   buildId: string,
+  pageId: string,
   input: { sortOrder: number; mainGemId: string; linkedGemIds: string[]; notes?: string | null },
 ): void {
   const db = getUserDb()
   const groupId = uuidv4()
-  db.prepare('INSERT INTO build_gem_groups (id, build_id, sort_order, notes) VALUES (?, ?, ?, ?)').run(
+  db.prepare('INSERT INTO build_gem_groups (id, build_id, page_id, sort_order, notes) VALUES (?, ?, ?, ?, ?)').run(
     groupId,
     buildId,
+    pageId,
     input.sortOrder,
     input.notes ?? null,
   )
@@ -495,15 +829,17 @@ export function saveBuildGemGroupPoB(
   })
 }
 
-export function getBuildItems(buildId: string, budgetTier: BudgetTier): BuildItem[] {
+export function getBuildItems(buildId: string, pageId?: string): BuildItem[] {
   const ref = getReferenceDb()
   const user = getUserDb()
+  const resolvedPageId = pageId ?? getActiveEquipPageId(buildId)
 
   const rows = user
-    .prepare('SELECT * FROM build_items WHERE build_id = ? AND budget_tier = ? ORDER BY priority, slot_label')
-    .all(buildId, budgetTier) as Array<{
+    .prepare('SELECT * FROM build_items WHERE build_id = ? AND page_id = ? ORDER BY priority, slot_label')
+    .all(buildId, resolvedPageId) as Array<{
     id: string
     build_id: string
+    page_id: string | null
     budget_tier: BudgetTier
     rarity: 'unique' | 'rare'
     unique_id: string | null
@@ -540,6 +876,7 @@ export function getBuildItems(buildId: string, budgetTier: BudgetTier): BuildIte
     return {
       id: row.id,
       buildId: row.build_id,
+      pageId: row.page_id ?? resolvedPageId,
       budgetTier: row.budget_tier,
       rarity: row.rarity,
       uniqueId: row.unique_id,
@@ -569,9 +906,10 @@ export function getBuildItems(buildId: string, budgetTier: BudgetTier): BuildIte
 
 export function saveBuildItem(buildId: string, input: SaveBuildItemInput): BuildItem {
   const db = getUserDb()
+  const pageId = input.pageId ?? getActiveEquipPageId(buildId)
   const existingBySlot = db
-    .prepare('SELECT id FROM build_items WHERE build_id = ? AND slot_label = ? AND budget_tier = ?')
-    .get(buildId, input.slotLabel, input.budgetTier) as { id: string } | undefined
+    .prepare('SELECT id FROM build_items WHERE build_id = ? AND slot_label = ? AND page_id = ?')
+    .get(buildId, input.slotLabel, pageId) as { id: string } | undefined
 
   const existingById = input.id
     ? (db.prepare('SELECT id FROM build_items WHERE id = ?').get(input.id) as { id: string } | undefined)
@@ -584,6 +922,7 @@ export function saveBuildItem(buildId: string, input: SaveBuildItemInput): Build
     db.prepare(`
       UPDATE build_items SET
         build_id = ?,
+        page_id = ?,
         budget_tier = ?,
         rarity = ?,
         unique_id = ?,
@@ -594,7 +933,8 @@ export function saveBuildItem(buildId: string, input: SaveBuildItemInput): Build
       WHERE id = ?
     `).run(
       buildId,
-      input.budgetTier,
+      pageId,
+      'early',
       input.rarity,
       input.uniqueId ?? null,
       input.baseItemId ?? null,
@@ -605,12 +945,13 @@ export function saveBuildItem(buildId: string, input: SaveBuildItemInput): Build
     )
   } else {
     db.prepare(`
-      INSERT INTO build_items (id, build_id, budget_tier, rarity, unique_id, base_item_id, slot_label, priority, notes)
-      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+      INSERT INTO build_items (id, build_id, page_id, budget_tier, rarity, unique_id, base_item_id, slot_label, priority, notes)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     `).run(
       id,
       buildId,
-      input.budgetTier,
+      pageId,
+      'early',
       input.rarity,
       input.uniqueId ?? null,
       input.baseItemId ?? null,
@@ -631,11 +972,12 @@ export function saveBuildItem(buildId: string, input: SaveBuildItemInput): Build
     insertMod.run(uuidv4(), id, mod.modId, mod.generationType, mod.slotIndex)
   }
 
-  const saved = getBuildItems(buildId, input.budgetTier).find((i) => i.id === id)!
+  const saved = getBuildItems(buildId, pageId).find((i) => i.id === id)!
   if (input.slotLabel === 'weapon_main' && saved.isTwoHanded) {
-    db.prepare(
-      "DELETE FROM build_items WHERE build_id = ? AND budget_tier = ? AND slot_label = 'weapon_off'",
-    ).run(buildId, input.budgetTier)
+    db.prepare("DELETE FROM build_items WHERE build_id = ? AND page_id = ? AND slot_label = 'weapon_off'").run(
+      buildId,
+      pageId,
+    )
   }
 
   return saved
@@ -952,40 +1294,40 @@ export function exportBuildPayload(buildId: string) {
   const profile = getUserDb().prepare('SELECT * FROM build_profiles WHERE id = ?').get(buildId) as BuildRow
   if (!profile) throw new Error('Build not found')
 
-  const gemGroups = getBuildGemGroups(buildId).map((group) => ({
-    id: group.id,
-    sortOrder: group.sortOrder,
-    notes: group.notes,
-    mainGemId: group.mainGem?.gemId ?? null,
-    linkedGems: group.linkedGems.map((g) => ({ gemId: g.gemId, notes: g.notes })),
+  const gemPages = getBuildGemPages(buildId).map((page) => ({
+    id: page.id,
+    title: page.title,
+    sortOrder: page.sortOrder,
+    isActive: page.isActive,
+    gemGroups: getBuildGemGroups(buildId, page.id).map((group) => ({
+      id: group.id,
+      sortOrder: group.sortOrder,
+      notes: group.notes,
+      mainGemId: group.mainGem?.gemId ?? null,
+      linkedGems: group.linkedGems.map((g) => ({ gemId: g.gemId, notes: g.notes })),
+    })),
   }))
 
-  const itemsRaw = getUserDb().prepare('SELECT * FROM build_items WHERE build_id = ?').all(buildId) as Array<{
-    budget_tier: BudgetTier
-    rarity: 'unique' | 'rare'
-    unique_id: string | null
-    base_item_id: string | null
-    slot_label: string
-    priority: number
-    notes: string | null
-    id: string
-  }>
-
-  const items = itemsRaw.map((item) => {
-    const mods = getUserDb()
-      .prepare('SELECT mod_id as modId, generation_type as generationType, slot_index as slotIndex FROM build_item_mods WHERE build_item_id = ?')
-      .all(item.id)
-    return {
-      budgetTier: item.budget_tier,
+  const equipPages = getBuildEquipPages(buildId).map((page) => ({
+    id: page.id,
+    title: page.title,
+    sortOrder: page.sortOrder,
+    isActive: page.isActive,
+    items: getBuildItems(buildId, page.id).map((item) => ({
+      id: item.id,
       rarity: item.rarity,
-      uniqueId: item.unique_id,
-      baseItemId: item.base_item_id,
-      slotLabel: item.slot_label,
+      uniqueId: item.uniqueId,
+      baseItemId: item.baseItemId,
+      slotLabel: item.slotLabel,
       priority: item.priority,
       notes: item.notes,
-      mods,
-    }
-  })
+      mods: item.mods.map((m) => ({
+        modId: m.modId,
+        generationType: m.generationType,
+        slotIndex: m.slotIndex,
+      })),
+    })),
+  }))
 
   const passiveTrees = getUserDb()
     .prepare('SELECT slot_index as slotIndex, level_label as levelLabel, notes FROM build_passive_trees WHERE build_id = ?')
@@ -998,14 +1340,14 @@ export function exportBuildPayload(buildId: string) {
     .all()
 
   return {
-    v: 4,
+    v: 6,
     build: {
       name: profile.name,
       className: profile.class_name,
       notes: profile.notes,
       activeBudgetTier: profile.active_budget_tier,
-      gemGroups,
-      items,
+      gemPages,
+      equipPages,
       passiveTrees,
       objectiveProgress,
     },
@@ -1024,46 +1366,107 @@ export function importBuildPayload(payload: { build: Record<string, unknown> }):
     db.prepare('UPDATE build_profiles SET active_budget_tier = ? WHERE id = ?').run(String(b.activeBudgetTier), profile.id)
   }
 
-  const gemGroups = (b.gemGroups as Array<Record<string, unknown>> | undefined) ?? []
-  if (gemGroups.length > 0) {
-    for (const group of gemGroups) {
-      saveBuildGemGroup(profile.id, {
-        id: group.id ? String(group.id) : undefined,
+  const gemPagesRaw = (b.gemPages as Array<Record<string, unknown>> | undefined) ?? []
+  if (gemPagesRaw.length > 0) {
+    const pages: SaveGemPageInput[] = gemPagesRaw.map((page, index) => ({
+      title: String(page.title ?? `Page ${index + 1}`),
+      sortOrder: Number(page.sortOrder ?? index),
+      isActive: Boolean(page.isActive),
+      gemGroups: ((page.gemGroups as Array<Record<string, unknown>>) ?? []).map((group) => ({
         mainGemId: String(group.mainGemId),
         linkedGems: ((group.linkedGems as Array<Record<string, unknown>>) ?? []).map((g) => ({
           gemId: String(g.gemId),
           notes: g.notes ? String(g.notes) : null,
         })),
         notes: group.notes ? String(group.notes) : null,
-      })
-    }
+      })),
+    }))
+    saveBuildGemPagesPoB(profile.id, pages)
   } else {
-    for (const gem of (b.gems as Array<Record<string, unknown>>) ?? []) {
-      const slotType = String(gem.slotType)
-      if (slotType !== 'active') continue
-      saveBuildGemGroup(profile.id, {
-        mainGemId: String(gem.gemId),
-        linkedGems: [],
-        notes: gem.notes ? String(gem.notes) : null,
-      })
+    const pageId = ensureDefaultGemPage(profile.id)
+    const gemGroups = (b.gemGroups as Array<Record<string, unknown>> | undefined) ?? []
+    if (gemGroups.length > 0) {
+      for (const group of gemGroups) {
+        saveBuildGemGroup(profile.id, {
+          id: group.id ? String(group.id) : undefined,
+          pageId,
+          mainGemId: String(group.mainGemId),
+          linkedGems: ((group.linkedGems as Array<Record<string, unknown>>) ?? []).map((g) => ({
+            gemId: String(g.gemId),
+            notes: g.notes ? String(g.notes) : null,
+          })),
+          notes: group.notes ? String(group.notes) : null,
+        })
+      }
+    } else {
+      for (const gem of (b.gems as Array<Record<string, unknown>>) ?? []) {
+        const slotType = String(gem.slotType)
+        if (slotType !== 'active') continue
+        saveBuildGemGroup(profile.id, {
+          pageId,
+          mainGemId: String(gem.gemId),
+          linkedGems: [],
+          notes: gem.notes ? String(gem.notes) : null,
+        })
+      }
     }
   }
 
-  for (const item of (b.items as Array<Record<string, unknown>>) ?? []) {
-    saveBuildItem(profile.id, {
-      budgetTier: item.budgetTier as BudgetTier,
-      rarity: item.rarity as 'unique' | 'rare',
-      uniqueId: item.uniqueId ? String(item.uniqueId) : null,
-      baseItemId: item.baseItemId ? String(item.baseItemId) : null,
-      slotLabel: String(item.slotLabel),
-      priority: Number(item.priority ?? 0),
-      notes: item.notes ? String(item.notes) : null,
-      mods: ((item.mods as Array<Record<string, unknown>>) ?? []).map((m) => ({
-        modId: String(m.modId),
-        generationType: m.generationType as 'prefix' | 'suffix',
-        slotIndex: Number(m.slotIndex),
+  const equipPagesRaw = (b.equipPages as Array<Record<string, unknown>> | undefined) ?? []
+  if (equipPagesRaw.length > 0) {
+    const pages: SaveEquipPageInput[] = equipPagesRaw.map((page, index) => ({
+      title: String(page.title ?? `Page ${index + 1}`),
+      sortOrder: Number(page.sortOrder ?? index),
+      isActive: Boolean(page.isActive),
+      items: ((page.items as Array<Record<string, unknown>>) ?? []).map((item) => ({
+        rarity: item.rarity as 'unique' | 'rare',
+        uniqueId: item.uniqueId ? String(item.uniqueId) : null,
+        baseItemId: item.baseItemId ? String(item.baseItemId) : null,
+        slotLabel: String(item.slotLabel),
+        priority: Number(item.priority ?? 0),
+        notes: item.notes ? String(item.notes) : null,
+        mods: ((item.mods as Array<Record<string, unknown>>) ?? []).map((m) => ({
+          modId: String(m.modId),
+          generationType: m.generationType as 'prefix' | 'suffix',
+          slotIndex: Number(m.slotIndex),
+        })),
       })),
-    })
+    }))
+    saveBuildEquipPagesPoB(profile.id, pages)
+  } else {
+    const legacyItems = (b.items as Array<Record<string, unknown>>) ?? []
+    if (legacyItems.length > 0) {
+      const tierTitles: Record<string, string> = {
+        early: 'Early Budget',
+        medium: 'Medium Budget',
+        high: 'High Budget',
+      }
+      const activeTier = String(b.activeBudgetTier ?? 'early')
+      const tiers = ['early', 'medium', 'high']
+      const pages: SaveEquipPageInput[] = tiers.map((tier, index) => ({
+        title: tierTitles[tier],
+        sortOrder: index,
+        isActive: tier === activeTier,
+        items: legacyItems
+          .filter((item) => String(item.budgetTier ?? 'early') === tier)
+          .map((item) => ({
+            rarity: item.rarity as 'unique' | 'rare',
+            uniqueId: item.uniqueId ? String(item.uniqueId) : null,
+            baseItemId: item.baseItemId ? String(item.baseItemId) : null,
+            slotLabel: String(item.slotLabel),
+            priority: Number(item.priority ?? 0),
+            notes: item.notes ? String(item.notes) : null,
+            mods: ((item.mods as Array<Record<string, unknown>>) ?? []).map((m) => ({
+              modId: String(m.modId),
+              generationType: m.generationType as 'prefix' | 'suffix',
+              slotIndex: Number(m.slotIndex),
+            })),
+          })),
+      }))
+      saveBuildEquipPagesPoB(profile.id, pages)
+    } else {
+      ensureDefaultEquipPage(profile.id)
+    }
   }
 
   for (const tree of ((b.passiveTrees as Array<Record<string, unknown>>) ?? []).slice(0, MAX_PASSIVE_TREES)) {
